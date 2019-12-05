@@ -42,7 +42,6 @@
 #endif
 
 extern void retro_poll_event(int joyon);
-extern void app_vkb_handle();
 
 extern struct video_canvas_s *RCANVAS;
 

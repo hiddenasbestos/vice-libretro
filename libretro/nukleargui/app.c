@@ -18,12 +18,10 @@ extern void filebrowser_free();
 
 extern void Screen_SetFullUpdate(int scr);
 extern void vkbd_key(int key,int pressed);
-extern void app_vkb_handle();
 
 extern char Core_Key_Sate[512];
 extern char Core_old_Key_Sate[512];
 extern char RPATH[512];
-extern int SHOWKEY;
 extern int want_quit;
 
 char LCONTENT[512];
@@ -121,37 +119,4 @@ int app_free()
    return 0;
 }
 
-int app_event(int poll)
-{
-	int evt;
-
-	nk_input_begin(ctx);
-	nk_retro_handle_event(&evt,poll);
-	nk_input_end(ctx);
-
-	return 0;
-}
-
-int app_render(int poll)
-{
-    static int prevpoll=0,prevstate=0,reset_state=0;
-    if(prevpoll!=poll || reset_state){nk_clear(ctx);reset_state=0;}
-
-    if(poll==0)
-	app_vkb_handle();
-    else 
-	restore_bgk();
-
-    app_event(poll);
-
-    int state=gui(&browser,ctx);
-    if(state==1 && prevstate!=1)reset_state=1;
-
-    nk_retro_render(nk_rgba(0,0,0,0));
-
-    prevpoll=poll;
-    prevstate=state;
-
-    return 0;
-}
 

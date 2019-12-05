@@ -1,5 +1,5 @@
 
-#line 3 "../../../vice/src/monitor/mon_lex.c"
+#line 2 "<stdout>"
 
 #define  YY_INT_ALIGNED short int
 
@@ -7,8 +7,8 @@
 
 #define FLEX_SCANNER
 #define YY_FLEX_MAJOR_VERSION 2
-#define YY_FLEX_MINOR_VERSION 5
-#define YY_FLEX_SUBMINOR_VERSION 39
+#define YY_FLEX_MINOR_VERSION 6
+#define YY_FLEX_SUBMINOR_VERSION 4
 #if YY_FLEX_SUBMINOR_VERSION > 0
 #define FLEX_BETA
 #endif
@@ -83,60 +83,48 @@ typedef unsigned int flex_uint32_t;
 #define UINT32_MAX             (4294967295U)
 #endif
 
+#ifndef SIZE_MAX
+#define SIZE_MAX               (~(size_t)0)
+#endif
+
 #endif /* ! C99 */
 
 #endif /* ! FLEXINT_H */
 
-#ifdef __cplusplus
+/* begin standard C++ headers. */
 
-/* The "const" storage-class-modifier is valid. */
-#define YY_USE_CONST
-
-#else	/* ! __cplusplus */
-
-/* C99 requires __STDC__ to be defined as 1. */
-#if defined (__STDC__)
-
-#define YY_USE_CONST
-
-#endif	/* defined (__STDC__) */
-#endif	/* ! __cplusplus */
-
-#ifdef YY_USE_CONST
+/* TODO: this is always defined, so inline it */
 #define yyconst const
+
+#if defined(__GNUC__) && __GNUC__ >= 3
+#define yynoreturn __attribute__((__noreturn__))
 #else
-#define yyconst
+#define yynoreturn
 #endif
 
 /* Returned upon end-of-file. */
 #define YY_NULL 0
 
-/* Promotes a possibly negative, possibly signed char to an unsigned
- * integer for use as an array index.  If the signed char is negative,
- * we want to instead treat it as an 8-bit unsigned char, hence the
- * double cast.
+/* Promotes a possibly negative, possibly signed char to an
+ *   integer in range [0..255] for use as an array index.
  */
-#define YY_SC_TO_UI(c) ((unsigned int) (unsigned char) c)
+#define YY_SC_TO_UI(c) ((YY_CHAR) (c))
 
 /* Enter a start condition.  This macro really ought to take a parameter,
  * but we do it the disgusting crufty way forced on us by the ()-less
  * definition of BEGIN.
  */
 #define BEGIN (yy_start) = 1 + 2 *
-
 /* Translate the current start state into a value that can be later handed
  * to BEGIN to return to the state.  The YYSTATE alias is for lex
  * compatibility.
  */
 #define YY_START (((yy_start) - 1) / 2)
 #define YYSTATE YY_START
-
 /* Action number for EOF rule of a given start state. */
 #define YY_STATE_EOF(state) (YY_END_OF_BUFFER + state + 1)
-
 /* Special action meaning "start processing a new file". */
-#define YY_NEW_FILE yyrestart(yyin  )
-
+#define YY_NEW_FILE yyrestart( yyin  )
 #define YY_END_OF_BUFFER_CHAR 0
 
 /* Size of default input buffer. */
@@ -166,14 +154,14 @@ typedef struct yy_buffer_state *YY_BUFFER_STATE;
 typedef size_t yy_size_t;
 #endif
 
-extern yy_size_t yyleng;
+extern int yyleng;
 
 extern FILE *yyin, *yyout;
 
 #define EOB_ACT_CONTINUE_SCAN 0
 #define EOB_ACT_END_OF_FILE 1
 #define EOB_ACT_LAST_MATCH 2
-
+    
     #define YY_LESS_LINENO(n)
     #define YY_LINENO_REWIND_TO(ptr)
     
@@ -190,7 +178,6 @@ extern FILE *yyin, *yyout;
 		YY_DO_BEFORE_ACTION; /* set up yytext again */ \
 		} \
 	while ( 0 )
-
 #define unput(c) yyunput( c, (yytext_ptr)  )
 
 #ifndef YY_STRUCT_YY_BUFFER_STATE
@@ -205,12 +192,12 @@ struct yy_buffer_state
 	/* Size of input buffer in bytes, not including room for EOB
 	 * characters.
 	 */
-	yy_size_t yy_buf_size;
+	int yy_buf_size;
 
 	/* Number of characters read into yy_ch_buf, not including EOB
 	 * characters.
 	 */
-	yy_size_t yy_n_chars;
+	int yy_n_chars;
 
 	/* Whether we "own" the buffer - i.e., we know we created it,
 	 * and can realloc() it to grow it, and should free() it to
@@ -233,7 +220,7 @@ struct yy_buffer_state
 
     int yy_bs_lineno; /**< The line count. */
     int yy_bs_column; /**< The column count. */
-    
+
 	/* Whether to try to fill the input buffer when we reach the
 	 * end of it.
 	 */
@@ -261,7 +248,7 @@ struct yy_buffer_state
 /* Stack of input buffers. */
 static size_t yy_buffer_stack_top = 0; /**< index of top of stack. */
 static size_t yy_buffer_stack_max = 0; /**< capacity of stack. */
-static YY_BUFFER_STATE * yy_buffer_stack = 0; /**< Stack as an array. */
+static YY_BUFFER_STATE * yy_buffer_stack = NULL; /**< Stack as an array. */
 
 /* We provide macros for accessing buffer states in case in the
  * future we want to put the buffer states in a more general
@@ -272,7 +259,6 @@ static YY_BUFFER_STATE * yy_buffer_stack = 0; /**< Stack as an array. */
 #define YY_CURRENT_BUFFER ( (yy_buffer_stack) \
                           ? (yy_buffer_stack)[(yy_buffer_stack_top)] \
                           : NULL)
-
 /* Same as previous macro, but useful when we know that the buffer stack is not
  * NULL or when we need an lvalue. For internal use only.
  */
@@ -280,11 +266,11 @@ static YY_BUFFER_STATE * yy_buffer_stack = 0; /**< Stack as an array. */
 
 /* yy_hold_char holds the character lost when yytext is formed. */
 static char yy_hold_char;
-static yy_size_t yy_n_chars;		/* number of characters read into yy_ch_buf */
-yy_size_t yyleng;
+static int yy_n_chars;		/* number of characters read into yy_ch_buf */
+int yyleng;
 
 /* Points to current character in buffer. */
-static char *yy_c_buf_p = (char *) 0;
+static char *yy_c_buf_p = NULL;
 static int yy_init = 0;		/* whether we need to initialize */
 static int yy_start = 0;	/* start state number */
 
@@ -293,71 +279,68 @@ static int yy_start = 0;	/* start state number */
  */
 static int yy_did_buffer_switch_on_eof;
 
-void yyrestart (FILE *input_file  );
-void yy_switch_to_buffer (YY_BUFFER_STATE new_buffer  );
-YY_BUFFER_STATE yy_create_buffer (FILE *file,int size  );
-void yy_delete_buffer (YY_BUFFER_STATE b  );
-void yy_flush_buffer (YY_BUFFER_STATE b  );
-void yypush_buffer_state (YY_BUFFER_STATE new_buffer  );
-void yypop_buffer_state (void );
+void yyrestart ( FILE *input_file  );
+void yy_switch_to_buffer ( YY_BUFFER_STATE new_buffer  );
+YY_BUFFER_STATE yy_create_buffer ( FILE *file, int size  );
+void yy_delete_buffer ( YY_BUFFER_STATE b  );
+void yy_flush_buffer ( YY_BUFFER_STATE b  );
+void yypush_buffer_state ( YY_BUFFER_STATE new_buffer  );
+void yypop_buffer_state ( void );
 
-static void yyensure_buffer_stack (void );
-static void yy_load_buffer_state (void );
-static void yy_init_buffer (YY_BUFFER_STATE b,FILE *file  );
+static void yyensure_buffer_stack ( void );
+static void yy_load_buffer_state ( void );
+static void yy_init_buffer ( YY_BUFFER_STATE b, FILE *file  );
+#define YY_FLUSH_BUFFER yy_flush_buffer( YY_CURRENT_BUFFER )
 
-#define YY_FLUSH_BUFFER yy_flush_buffer(YY_CURRENT_BUFFER )
+YY_BUFFER_STATE yy_scan_buffer ( char *base, yy_size_t size  );
+YY_BUFFER_STATE yy_scan_string ( const char *yy_str  );
+YY_BUFFER_STATE yy_scan_bytes ( const char *bytes, int len  );
 
-YY_BUFFER_STATE yy_scan_buffer (char *base,yy_size_t size  );
-YY_BUFFER_STATE yy_scan_string (yyconst char *yy_str  );
-YY_BUFFER_STATE yy_scan_bytes (yyconst char *bytes,yy_size_t len  );
-
-void *yyalloc (yy_size_t  );
-void *yyrealloc (void *,yy_size_t  );
-void yyfree (void *  );
+void *yyalloc ( yy_size_t  );
+void *yyrealloc ( void *, yy_size_t  );
+void yyfree ( void *  );
 
 #define yy_new_buffer yy_create_buffer
-
 #define yy_set_interactive(is_interactive) \
 	{ \
 	if ( ! YY_CURRENT_BUFFER ){ \
         yyensure_buffer_stack (); \
 		YY_CURRENT_BUFFER_LVALUE =    \
-            yy_create_buffer(yyin,YY_BUF_SIZE ); \
+            yy_create_buffer( yyin, YY_BUF_SIZE ); \
 	} \
 	YY_CURRENT_BUFFER_LVALUE->yy_is_interactive = is_interactive; \
 	}
-
 #define yy_set_bol(at_bol) \
 	{ \
 	if ( ! YY_CURRENT_BUFFER ){\
         yyensure_buffer_stack (); \
 		YY_CURRENT_BUFFER_LVALUE =    \
-            yy_create_buffer(yyin,YY_BUF_SIZE ); \
+            yy_create_buffer( yyin, YY_BUF_SIZE ); \
 	} \
 	YY_CURRENT_BUFFER_LVALUE->yy_at_bol = at_bol; \
 	}
-
 #define YY_AT_BOL() (YY_CURRENT_BUFFER_LVALUE->yy_at_bol)
 
 /* Begin user sect3 */
+typedef flex_uint8_t YY_CHAR;
 
-typedef unsigned char YY_CHAR;
-
-FILE *yyin = (FILE *) 0, *yyout = (FILE *) 0;
+FILE *yyin = NULL, *yyout = NULL;
 
 typedef int yy_state_type;
 
 extern int yylineno;
-
 int yylineno = 1;
 
 extern char *yytext;
+#ifdef yytext_ptr
+#undef yytext_ptr
+#endif
 #define yytext_ptr yytext
 
-static yy_state_type yy_get_previous_state (void );
-static yy_state_type yy_try_NUL_trans (yy_state_type current_state  );
-static int yy_get_next_buffer (void );
-static void yy_fatal_error (yyconst char msg[]  );
+static yy_state_type yy_get_previous_state ( void );
+static yy_state_type yy_try_NUL_trans ( yy_state_type current_state  );
+static int yy_get_next_buffer ( void );
+static void yynoreturn yy_fatal_error ( const char* msg  );
 
 /* Done after the current pattern has been matched and before the
  * corresponding action - sets up yytext.
@@ -365,11 +348,10 @@ static void yy_fatal_error (yyconst char msg[]  );
 #define YY_DO_BEFORE_ACTION \
 	(yytext_ptr) = yy_bp; \
 	(yytext_ptr) -= (yy_more_len); \
-	yyleng = (size_t) (yy_cp - (yytext_ptr)); \
+	yyleng = (int) (yy_cp - (yytext_ptr)); \
 	(yy_hold_char) = *yy_cp; \
 	*yy_cp = '\0'; \
 	(yy_c_buf_p) = yy_cp;
-
 #define YY_NUM_RULES 294
 #define YY_END_OF_BUFFER 295
 /* This struct is not used in this scanner,
@@ -379,7 +361,7 @@ struct yy_trans_info
 	flex_int32_t yy_verify;
 	flex_int32_t yy_nxt;
 	};
-static yyconst flex_int16_t yy_acclist[1309] =
+static const flex_int16_t yy_acclist[1309] =
     {   0,
       115,  284,  115,  284,  115,  115,  115,  115,   96,  115,
        96,  115,  115,  115,  115,  284,  115,  284,  115,  284,
@@ -527,7 +509,7 @@ static yyconst flex_int16_t yy_acclist[1309] =
        84,   84,   84,   84,   66,   84,   67,   84
     } ;
 
-static yyconst flex_int16_t yy_accept[798] =
+static const flex_int16_t yy_accept[798] =
     {   0,
         1,    3,    5,    6,    7,    8,    9,   11,   13,   14,
        15,   17,   19,   21,   23,   25,   27,   29,   31,   33,
@@ -619,7 +601,7 @@ static yyconst flex_int16_t yy_accept[798] =
 
     } ;
 
-static yyconst flex_int32_t yy_ec[256] =
+static const YY_CHAR yy_ec[256] =
     {   0,
         1,    1,    1,    1,    1,    1,    1,    1,    2,    3,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
@@ -651,7 +633,7 @@ static yyconst flex_int32_t yy_ec[256] =
         1,    1,    1,    1,    1
     } ;
 
-static yyconst flex_int32_t yy_meta[90] =
+static const YY_CHAR yy_meta[90] =
     {   0,
         1,    2,    3,    4,    1,    5,    1,    6,    6,    6,
         7,    1,    6,    8,    1,    9,   10,   10,   10,   10,
@@ -664,7 +646,7 @@ static yyconst flex_int32_t yy_meta[90] =
        14,   14,   14,   14,   14,   14,   14,    1,    1
     } ;
 
-static yyconst flex_int16_t yy_base[825] =
+static const flex_int16_t yy_base[825] =
     {   0,
         0,    0,   88,   93,  123,    0,  211,  216,  224,  229,
       259,    0,  348,    0,  437,    0,  521,    0,  602,  691,
@@ -759,7 +741,7 @@ static yyconst flex_int16_t yy_base[825] =
      1401, 1421, 1425, 1648
     } ;
 
-static yyconst flex_int16_t yy_def[825] =
+static const flex_int16_t yy_def[825] =
     {   0,
       796,    1,  797,  797,  796,    5,  798,  798,  799,  799,
       796,   11,  796,   13,  796,   15,    1,   17,  800,  800,
@@ -854,7 +836,7 @@ static yyconst flex_int16_t yy_def[825] =
       796,  796,  796,  796
     } ;
 
-static yyconst flex_int16_t yy_nxt[2746] =
+static const flex_int16_t yy_nxt[2746] =
     {   0,
        26,   27,   28,   27,   26,   29,   26,   30,   31,   32,
        26,   26,   33,   34,   26,   35,   36,   37,   36,   36,
@@ -1160,7 +1142,7 @@ static yyconst flex_int16_t yy_nxt[2746] =
       796,  796,  796,  796,  796
     } ;
 
-static yyconst flex_int16_t yy_chk[2746] =
+static const flex_int16_t yy_chk[2746] =
     {   0,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
@@ -1494,7 +1476,7 @@ static int yy_more_len = 0;
 #define YY_MORE_ADJ (yy_more_len)
 #define YY_RESTORE_YY_MORE_OFFSET
 char *yytext;
-#line 1 "../../../vice/src/monitor/mon_lex.l"
+#line 1 "vice/src/monitor/mon_lex.l"
 /* -*- C -*-
  *
  * mon_lex.l - Lexer for the VICE built-in monitor.
@@ -1523,7 +1505,7 @@ char *yytext;
  *  02111-1307  USA.
  *
  */
-#line 31 "../../../vice/src/monitor/mon_lex.l"
+#line 31 "vice/src/monitor/mon_lex.l"
 
 /* Lexer for x64 monitor */
 
@@ -1612,9 +1594,10 @@ send:
     *d = 0;
 }
 
+#line 1597 "<stdout>"
 #define YY_NO_INPUT 1
 
-#line 1618 "../../../vice/src/monitor/mon_lex.c"
+#line 1600 "<stdout>"
 
 #define INITIAL 0
 #define FNAME 1
@@ -1641,36 +1624,36 @@ send:
 #define YY_EXTRA_TYPE void *
 #endif
 
-static int yy_init_globals (void );
+static int yy_init_globals ( void );
 
 /* Accessor methods to globals.
    These are made visible to non-reentrant scanners for convenience. */
 
-int yylex_destroy (void );
+int yylex_destroy ( void );
 
-int yyget_debug (void );
+int yyget_debug ( void );
 
-void yyset_debug (int debug_flag  );
+void yyset_debug ( int debug_flag  );
 
-YY_EXTRA_TYPE yyget_extra (void );
+YY_EXTRA_TYPE yyget_extra ( void );
 
-void yyset_extra (YY_EXTRA_TYPE user_defined  );
+void yyset_extra ( YY_EXTRA_TYPE user_defined  );
 
-FILE *yyget_in (void );
+FILE *yyget_in ( void );
 
-void yyset_in  (FILE * in_str  );
+void yyset_in  ( FILE * _in_str  );
 
-FILE *yyget_out (void );
+FILE *yyget_out ( void );
 
-void yyset_out  (FILE * out_str  );
+void yyset_out  ( FILE * _out_str  );
 
-yy_size_t yyget_leng (void );
+			int yyget_leng ( void );
 
-char *yyget_text (void );
+char *yyget_text ( void );
 
-int yyget_lineno (void );
+int yyget_lineno ( void );
 
-void yyset_lineno (int line_number  );
+void yyset_lineno ( int _line_number  );
 
 /* Macros after this point can all be overridden by user definitions in
  * section 1.
@@ -1678,26 +1661,29 @@ void yyset_lineno (int line_number  );
 
 #ifndef YY_SKIP_YYWRAP
 #ifdef __cplusplus
-extern "C" int yywrap (void );
+extern "C" int yywrap ( void );
 #else
-extern int yywrap (void );
+extern int yywrap ( void );
 #endif
+#endif
+
+#ifndef YY_NO_UNPUT
+    
 #endif
 
 #ifndef yytext_ptr
-static void yy_flex_strncpy (char *,yyconst char *,int );
+static void yy_flex_strncpy ( char *, const char *, int );
 #endif
 
 #ifdef YY_NEED_STRLEN
-static int yy_flex_strlen (yyconst char * );
+static int yy_flex_strlen ( const char * );
 #endif
 
 #ifndef YY_NO_INPUT
-
 #ifdef __cplusplus
-static int yyinput (void );
+static int yyinput ( void );
 #else
-static int input (void );
+static int input ( void );
 #endif
 
 #endif
@@ -1717,7 +1703,7 @@ static int input (void );
 /* This used to be an fputs(), but since the string might contain NUL's,
  * we now use fwrite().
  */
-#define ECHO do { if (fwrite( yytext, yyleng, 1, yyout )) {} } while (0)
+#define ECHO do { if (fwrite( yytext, (size_t) yyleng, 1, yyout )) {} } while (0)
 #endif
 
 /* Gets input and stuffs it into "buf".  number of characters read, or YY_NULL,
@@ -1741,7 +1727,7 @@ static int input (void );
 	else \
 		{ \
 		errno=0; \
-		while ( (result = fread(buf, 1, (yy_size_t) max_size, yyin)) == 0 && ferror(yyin)) \
+		while ( (result = (int) fread(buf, 1, (yy_size_t) max_size, yyin)) == 0 && ferror(yyin)) \
 			{ \
 			if( errno != EINTR) \
 				{ \
@@ -1796,7 +1782,7 @@ extern int yylex (void);
 
 /* Code executed at the end of each rule. */
 #ifndef YY_BREAK
-#define YY_BREAK break;
+#define YY_BREAK /*LINTED*/break;
 #endif
 
 #define YY_RULE_SETUP \
@@ -1806,9 +1792,9 @@ extern int yylex (void);
  */
 YY_DECL
 {
-	register yy_state_type yy_current_state;
-	register char *yy_cp, *yy_bp;
-	register int yy_act;
+	yy_state_type yy_current_state;
+	char *yy_cp, *yy_bp;
+	int yy_act;
     
 	if ( !(yy_init) )
 		{
@@ -1836,17 +1822,18 @@ YY_DECL
 		if ( ! YY_CURRENT_BUFFER ) {
 			yyensure_buffer_stack ();
 			YY_CURRENT_BUFFER_LVALUE =
-				yy_create_buffer(yyin,YY_BUF_SIZE );
+				yy_create_buffer( yyin, YY_BUF_SIZE );
 		}
 
-		yy_load_buffer_state( );
+		yy_load_buffer_state(  );
 		}
 
 	{
-#line 129 "../../../vice/src/monitor/mon_lex.l"
+#line 129 "vice/src/monitor/mon_lex.l"
 
 
 
+#line 133 "vice/src/monitor/mon_lex.l"
    if (new_cmd) {
       if (!(asm_mode && opt_asm)) {
          last_len = cur_len = 0;
@@ -1861,14 +1848,14 @@ YY_DECL
    }
 
 
-#line 1865 "../../../vice/src/monitor/mon_lex.c"
+#line 1851 "<stdout>"
 
-	while ( 1 )		/* loops until end-of-file is reached */
+	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
 		(yy_more_len) = 0;
 		if ( (yy_more_flag) )
 			{
-			(yy_more_len) = (yy_c_buf_p) - (yytext_ptr);
+			(yy_more_len) = (int) ((yy_c_buf_p) - (yytext_ptr));
 			(yy_more_flag) = 0;
 			}
 		yy_cp = (yy_c_buf_p);
@@ -1889,14 +1876,14 @@ YY_DECL
 yy_match:
 		do
 			{
-			register YY_CHAR yy_c = yy_ec[YY_SC_TO_UI(*yy_cp)] ;
+			YY_CHAR yy_c = yy_ec[YY_SC_TO_UI(*yy_cp)] ;
 			while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 				{
 				yy_current_state = (int) yy_def[yy_current_state];
 				if ( yy_current_state >= 797 )
-					yy_c = yy_meta[(unsigned int) yy_c];
+					yy_c = yy_meta[yy_c];
 				}
-			yy_current_state = yy_nxt[yy_base[yy_current_state] + (unsigned int) yy_c];
+			yy_current_state = yy_nxt[yy_base[yy_current_state] + yy_c];
 			*(yy_state_ptr)++ = yy_current_state;
 			++yy_cp;
 			}
@@ -1950,474 +1937,474 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 147 "../../../vice/src/monitor/mon_lex.l"
+#line 148 "vice/src/monitor/mon_lex.l"
 { BEGIN(ROL);           return CMD_COMMENT; }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 148 "../../../vice/src/monitor/mon_lex.l"
+#line 149 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CONVERT_OP; }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 149 "../../../vice/src/monitor/mon_lex.l"
+#line 150 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_ENTER_DATA; }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 150 "../../../vice/src/monitor/mon_lex.l"
+#line 151 "vice/src/monitor/mon_lex.l"
 { BEGIN(ROL);           return CMD_DISK; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 151 "../../../vice/src/monitor/mon_lex.l"
+#line 152 "vice/src/monitor/mon_lex.l"
 { opt_asm = 1; BEGIN(INITIAL); return CMD_ASSEMBLE; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 152 "../../../vice/src/monitor/mon_lex.l"
+#line 153 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_ADD_LABEL; }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 153 "../../../vice/src/monitor/mon_lex.l"
+#line 154 "vice/src/monitor/mon_lex.l"
 { BEGIN(FNAME);         return CMD_ATTACH; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 154 "../../../vice/src/monitor/mon_lex.l"
+#line 155 "vice/src/monitor/mon_lex.l"
 { BEGIN(FNAME);         return CMD_AUTOSTART; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 155 "../../../vice/src/monitor/mon_lex.l"
+#line 156 "vice/src/monitor/mon_lex.l"
 { BEGIN(FNAME);         return CMD_AUTOLOAD; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 156 "../../../vice/src/monitor/mon_lex.l"
+#line 157 "vice/src/monitor/mon_lex.l"
 { BEGIN(BNAME);         return CMD_BANK; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 157 "../../../vice/src/monitor/mon_lex.l"
+#line 158 "vice/src/monitor/mon_lex.l"
 { BEGIN(FNAME);         return CMD_BLOAD; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 158 "../../../vice/src/monitor/mon_lex.l"
+#line 159 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_BLOCK_READ; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 159 "../../../vice/src/monitor/mon_lex.l"
+#line 160 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_BREAK; }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 160 "../../../vice/src/monitor/mon_lex.l"
+#line 161 "vice/src/monitor/mon_lex.l"
 { BEGIN(FNAME);         return CMD_BSAVE; }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 161 "../../../vice/src/monitor/mon_lex.l"
+#line 162 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_BACKTRACE; }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 162 "../../../vice/src/monitor/mon_lex.l"
+#line 163 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_BLOCK_WRITE; }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 163 "../../../vice/src/monitor/mon_lex.l"
+#line 164 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_CARTFREEZE; }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 164 "../../../vice/src/monitor/mon_lex.l"
+#line 165 "vice/src/monitor/mon_lex.l"
 { BEGIN(ROL);           return CMD_CHDIR; }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 165 "../../../vice/src/monitor/mon_lex.l"
+#line 166 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_CLEAR_LABELS; }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 166 "../../../vice/src/monitor/mon_lex.l"
+#line 167 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_COMMAND; }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 167 "../../../vice/src/monitor/mon_lex.l"
+#line 168 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_COMPARE; }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 168 "../../../vice/src/monitor/mon_lex.l"
+#line 169 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_CONDITION; }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 169 "../../../vice/src/monitor/mon_lex.l"
+#line 170 "vice/src/monitor/mon_lex.l"
 { BEGIN(CTYPE);         return CMD_CPU; }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 170 "../../../vice/src/monitor/mon_lex.l"
+#line 171 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_CPUHISTORY; }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 171 "../../../vice/src/monitor/mon_lex.l"
+#line 172 "vice/src/monitor/mon_lex.l"
 { BEGIN(ROL);           return CMD_DIR; }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 172 "../../../vice/src/monitor/mon_lex.l"
+#line 173 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_DISASSEMBLE; }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 173 "../../../vice/src/monitor/mon_lex.l"
+#line 174 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_DELETE; }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 174 "../../../vice/src/monitor/mon_lex.l"
+#line 175 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_DEL_LABEL; }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 175 "../../../vice/src/monitor/mon_lex.l"
+#line 176 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_DEVICE; }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 176 "../../../vice/src/monitor/mon_lex.l"
+#line 177 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_DETACH; }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 177 "../../../vice/src/monitor/mon_lex.l"
+#line 178 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_CHECKPT_OFF; }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 178 "../../../vice/src/monitor/mon_lex.l"
+#line 179 "vice/src/monitor/mon_lex.l"
 { BEGIN(FNAME);         return CMD_DUMP; }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 179 "../../../vice/src/monitor/mon_lex.l"
+#line 180 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_CHECKPT_ON; }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 180 "../../../vice/src/monitor/mon_lex.l"
+#line 181 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_EXIT; }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 181 "../../../vice/src/monitor/mon_lex.l"
+#line 182 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_EXPORT; }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 182 "../../../vice/src/monitor/mon_lex.l"
+#line 183 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_FILL; }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 183 "../../../vice/src/monitor/mon_lex.l"
+#line 184 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_GOTO; }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 184 "../../../vice/src/monitor/mon_lex.l"
+#line 185 "vice/src/monitor/mon_lex.l"
 { BEGIN(ROL);           return CMD_HELP; }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 185 "../../../vice/src/monitor/mon_lex.l"
+#line 186 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_HUNT; }
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 186 "../../../vice/src/monitor/mon_lex.l"
+#line 187 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_TEXT_DISPLAY; }
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 187 "../../../vice/src/monitor/mon_lex.l"
+#line 188 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_SCREENCODE_DISPLAY; }
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 188 "../../../vice/src/monitor/mon_lex.l"
+#line 189 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_IGNORE; }
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 189 "../../../vice/src/monitor/mon_lex.l"
+#line 190 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_IO; }
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 190 "../../../vice/src/monitor/mon_lex.l"
+#line 191 "vice/src/monitor/mon_lex.l"
 { BEGIN(ROL);           return CMD_KEYBUF; }
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 191 "../../../vice/src/monitor/mon_lex.l"
+#line 192 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_LIST; }
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 192 "../../../vice/src/monitor/mon_lex.l"
+#line 193 "vice/src/monitor/mon_lex.l"
 { BEGIN(FNAME);         return CMD_LOAD; }
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 193 "../../../vice/src/monitor/mon_lex.l"
+#line 194 "vice/src/monitor/mon_lex.l"
 { BEGIN(FNAME);         return CMD_LOAD_LABELS; }
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 194 "../../../vice/src/monitor/mon_lex.l"
+#line 195 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_MEM_DISPLAY; }
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 195 "../../../vice/src/monitor/mon_lex.l"
+#line 196 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_CHAR_DISPLAY; }
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 196 "../../../vice/src/monitor/mon_lex.l"
+#line 197 "vice/src/monitor/mon_lex.l"
 { BEGIN(FNAME);       return CMD_MEMMAPSAVE; }
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 197 "../../../vice/src/monitor/mon_lex.l"
+#line 198 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_MEMMAPSHOW; }
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 198 "../../../vice/src/monitor/mon_lex.l"
+#line 199 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_MEMMAPZAP; }
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 199 "../../../vice/src/monitor/mon_lex.l"
+#line 200 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_MOVE; }
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 200 "../../../vice/src/monitor/mon_lex.l"
+#line 201 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_SPRITE_DISPLAY; }
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
-#line 201 "../../../vice/src/monitor/mon_lex.l"
+#line 202 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_NEXT; }
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
-#line 202 "../../../vice/src/monitor/mon_lex.l"
+#line 203 "vice/src/monitor/mon_lex.l"
 { BEGIN(FNAME);         return CMD_PLAYBACK; }
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
-#line 203 "../../../vice/src/monitor/mon_lex.l"
+#line 204 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_PRINT; }
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
-#line 204 "../../../vice/src/monitor/mon_lex.l"
+#line 205 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_PWD; }
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
-#line 205 "../../../vice/src/monitor/mon_lex.l"
+#line 206 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_QUIT; }
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
-#line 206 "../../../vice/src/monitor/mon_lex.l"
+#line 207 "vice/src/monitor/mon_lex.l"
 { BEGIN(RADIX);         return CMD_RADIX; }
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
-#line 207 "../../../vice/src/monitor/mon_lex.l"
+#line 208 "vice/src/monitor/mon_lex.l"
 { BEGIN(FNAME);         return CMD_RECORD; }
 	YY_BREAK
 case 62:
 YY_RULE_SETUP
-#line 208 "../../../vice/src/monitor/mon_lex.l"
+#line 209 "vice/src/monitor/mon_lex.l"
 { BEGIN(REG_ASGN);      return CMD_REGISTERS; }
 	YY_BREAK
 case 63:
 YY_RULE_SETUP
-#line 209 "../../../vice/src/monitor/mon_lex.l"
+#line 210 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_MON_RESET; }
 	YY_BREAK
 case 64:
 YY_RULE_SETUP
-#line 210 "../../../vice/src/monitor/mon_lex.l"
+#line 211 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);    return CMD_RESOURCE_GET; }
 	YY_BREAK
 case 65:
 YY_RULE_SETUP
-#line 211 "../../../vice/src/monitor/mon_lex.l"
+#line 212 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);    return CMD_RESOURCE_SET; }
 	YY_BREAK
 case 66:
 YY_RULE_SETUP
-#line 212 "../../../vice/src/monitor/mon_lex.l"
+#line 213 "vice/src/monitor/mon_lex.l"
 { BEGIN(FNAME); return CMD_LOAD_RESOURCES; }
 	YY_BREAK
 case 67:
 YY_RULE_SETUP
-#line 213 "../../../vice/src/monitor/mon_lex.l"
+#line 214 "vice/src/monitor/mon_lex.l"
 { BEGIN(FNAME); return CMD_SAVE_RESOURCES; }
 	YY_BREAK
 case 68:
 YY_RULE_SETUP
-#line 214 "../../../vice/src/monitor/mon_lex.l"
+#line 215 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_RETURN; }
 	YY_BREAK
 case 69:
 YY_RULE_SETUP
-#line 215 "../../../vice/src/monitor/mon_lex.l"
+#line 216 "vice/src/monitor/mon_lex.l"
 { BEGIN(FNAME);         return CMD_SAVE; }
 	YY_BREAK
 case 70:
 YY_RULE_SETUP
-#line 216 "../../../vice/src/monitor/mon_lex.l"
+#line 217 "vice/src/monitor/mon_lex.l"
 { BEGIN(FNAME);         return CMD_SAVE_LABELS; }
 	YY_BREAK
 case 71:
 YY_RULE_SETUP
-#line 217 "../../../vice/src/monitor/mon_lex.l"
+#line 218 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_SCREEN; }
 	YY_BREAK
 case 72:
 YY_RULE_SETUP
-#line 218 "../../../vice/src/monitor/mon_lex.l"
+#line 219 "vice/src/monitor/mon_lex.l"
 { BEGIN(FNAME);        return CMD_SCREENSHOT; }
 	YY_BREAK
 case 73:
 YY_RULE_SETUP
-#line 219 "../../../vice/src/monitor/mon_lex.l"
+#line 220 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_SHOW_LABELS; }
 	YY_BREAK
 case 74:
 YY_RULE_SETUP
-#line 220 "../../../vice/src/monitor/mon_lex.l"
+#line 221 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_SIDEFX; }
 	YY_BREAK
 case 75:
 YY_RULE_SETUP
-#line 221 "../../../vice/src/monitor/mon_lex.l"
+#line 222 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_STEP; }
 	YY_BREAK
 case 76:
 YY_RULE_SETUP
-#line 222 "../../../vice/src/monitor/mon_lex.l"
+#line 223 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_MON_STOP; }
 	YY_BREAK
 case 77:
 YY_RULE_SETUP
-#line 223 "../../../vice/src/monitor/mon_lex.l"
+#line 224 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_STOPWATCH; }
 	YY_BREAK
 case 78:
 YY_RULE_SETUP
-#line 224 "../../../vice/src/monitor/mon_lex.l"
+#line 225 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_TAPECTRL; }
 	YY_BREAK
 case 79:
 YY_RULE_SETUP
-#line 225 "../../../vice/src/monitor/mon_lex.l"
+#line 226 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_TRACE; }
 	YY_BREAK
 case 80:
 YY_RULE_SETUP
-#line 226 "../../../vice/src/monitor/mon_lex.l"
+#line 227 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_UNTIL; }
 	YY_BREAK
 case 81:
 YY_RULE_SETUP
-#line 227 "../../../vice/src/monitor/mon_lex.l"
+#line 228 "vice/src/monitor/mon_lex.l"
 { BEGIN(FNAME);         return CMD_UNDUMP; }
 	YY_BREAK
 case 82:
 YY_RULE_SETUP
-#line 228 "../../../vice/src/monitor/mon_lex.l"
+#line 229 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_WATCH; }
 	YY_BREAK
 case 83:
 YY_RULE_SETUP
-#line 229 "../../../vice/src/monitor/mon_lex.l"
+#line 230 "vice/src/monitor/mon_lex.l"
 { BEGIN(INITIAL);       return CMD_YYDEBUG; }
 	YY_BREAK
 
 /* this is not a real command, but could be a label name for a label assignment */
 case 84:
 YY_RULE_SETUP
-#line 232 "../../../vice/src/monitor/mon_lex.l"
+#line 233 "vice/src/monitor/mon_lex.l"
 { BEGIN(LABEL_ASGN); yylval.str = lib_stralloc(yytext); return CMD_LABEL_ASGN; }
 	YY_BREAK
 case 85:
 YY_RULE_SETUP
-#line 234 "../../../vice/src/monitor/mon_lex.l"
+#line 235 "vice/src/monitor/mon_lex.l"
 { new_cmd = 1; return CMD_SEP; }
 	YY_BREAK
 case 86:
 YY_RULE_SETUP
-#line 236 "../../../vice/src/monitor/mon_lex.l"
+#line 237 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_ON; return TOGGLE; }
 	YY_BREAK
 case 87:
 YY_RULE_SETUP
-#line 237 "../../../vice/src/monitor/mon_lex.l"
+#line 238 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_OFF; return TOGGLE; }
 	YY_BREAK
 case 88:
 YY_RULE_SETUP
-#line 238 "../../../vice/src/monitor/mon_lex.l"
+#line 239 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_TOGGLE; return TOGGLE; }
 	YY_BREAK
 case 89:
 YY_RULE_SETUP
-#line 240 "../../../vice/src/monitor/mon_lex.l"
+#line 241 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_load; return MEM_OP; }
 	YY_BREAK
 case 90:
 YY_RULE_SETUP
-#line 241 "../../../vice/src/monitor/mon_lex.l"
+#line 242 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_store; return MEM_OP; }
 	YY_BREAK
 case 91:
 YY_RULE_SETUP
-#line 242 "../../../vice/src/monitor/mon_lex.l"
+#line 243 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_exec; return MEM_OP; }
 	YY_BREAK
 case 92:
 YY_RULE_SETUP
-#line 244 "../../../vice/src/monitor/mon_lex.l"
+#line 245 "vice/src/monitor/mon_lex.l"
 { return RESET; }
 	YY_BREAK
 case 93:
 YY_RULE_SETUP
-#line 246 "../../../vice/src/monitor/mon_lex.l"
+#line 247 "vice/src/monitor/mon_lex.l"
 { BEGIN (COND_MODE); return IF; }
 	YY_BREAK
 case 94:
 YY_RULE_SETUP
-#line 248 "../../../vice/src/monitor/mon_lex.l"
+#line 249 "vice/src/monitor/mon_lex.l"
 { if (!quote) {
                      quote = 1;
                      BEGIN (STR);
@@ -2426,7 +2413,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 95:
 YY_RULE_SETUP
-#line 254 "../../../vice/src/monitor/mon_lex.l"
+#line 255 "vice/src/monitor/mon_lex.l"
 { if (quote) {
                      if ((yyleng > 1) && (yytext[yyleng - 2] == '\\')) {
                          yymore(); /* skip escaped quote */
@@ -2449,7 +2436,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 96:
 YY_RULE_SETUP
-#line 274 "../../../vice/src/monitor/mon_lex.l"
+#line 275 "vice/src/monitor/mon_lex.l"
 { if (yytext[yyleng - 1] == '\\') {
                      yymore(); /* skip escaped quote */
                   } else {
@@ -2462,22 +2449,22 @@ YY_RULE_SETUP
 /* prefixes for numbers */
 case 97:
 YY_RULE_SETUP
-#line 284 "../../../vice/src/monitor/mon_lex.l"
+#line 285 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_hexadecimal; return INPUT_SPEC; }
 	YY_BREAK
 case 98:
 YY_RULE_SETUP
-#line 285 "../../../vice/src/monitor/mon_lex.l"
+#line 286 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_decimal; return INPUT_SPEC; }
 	YY_BREAK
 case 99:
 YY_RULE_SETUP
-#line 286 "../../../vice/src/monitor/mon_lex.l"
+#line 287 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_binary; return INPUT_SPEC; }
 	YY_BREAK
 case 100:
 YY_RULE_SETUP
-#line 287 "../../../vice/src/monitor/mon_lex.l"
+#line 288 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_octal; return INPUT_SPEC; }
 	YY_BREAK
 /* \.TA		{ yylval.i = e_text_ascii; return INPUT_SPEC; } */
@@ -2488,22 +2475,22 @@ YY_RULE_SETUP
 /* used by the "radix" command */
 case 101:
 YY_RULE_SETUP
-#line 295 "../../../vice/src/monitor/mon_lex.l"
+#line 296 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_decimal; return RADIX_TYPE; }
 	YY_BREAK
 case 102:
 YY_RULE_SETUP
-#line 296 "../../../vice/src/monitor/mon_lex.l"
+#line 297 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_hexadecimal; return RADIX_TYPE; }
 	YY_BREAK
 case 103:
 YY_RULE_SETUP
-#line 297 "../../../vice/src/monitor/mon_lex.l"
+#line 298 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_binary; return RADIX_TYPE; }
 	YY_BREAK
 case 104:
 YY_RULE_SETUP
-#line 298 "../../../vice/src/monitor/mon_lex.l"
+#line 299 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_octal; return RADIX_TYPE; }
 	YY_BREAK
 /* <RADIX>C		{ yylval.i = e_character; return RADIX_TYPE; } */
@@ -2513,12 +2500,12 @@ YY_RULE_SETUP
 /* used (currently) by the "memory" command */
 case 105:
 YY_RULE_SETUP
-#line 305 "../../../vice/src/monitor/mon_lex.l"
+#line 306 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_hexadecimal; return RADIX_TYPE; }
 	YY_BREAK
 case 106:
 YY_RULE_SETUP
-#line 306 "../../../vice/src/monitor/mon_lex.l"
+#line 307 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_octal; return RADIX_TYPE; }
 	YY_BREAK
 /* 'b' and 'd' are ambiguous (could be either radix or hex value),
@@ -2526,7 +2513,7 @@ YY_RULE_SETUP
     (fortunately, rarely used) radix argument to the memory command */
 case 107:
 YY_RULE_SETUP
-#line 310 "../../../vice/src/monitor/mon_lex.l"
+#line 311 "vice/src/monitor/mon_lex.l"
 { if (yytext[0] == 'D') {
                         yylval.i = e_decimal; return RADIX_TYPE;
                       } else {
@@ -2536,7 +2523,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 108:
 YY_RULE_SETUP
-#line 316 "../../../vice/src/monitor/mon_lex.l"
+#line 317 "vice/src/monitor/mon_lex.l"
 { if (yytext[0] == 'B') {
                         yylval.i = e_binary; return RADIX_TYPE;
                       } else {
@@ -2546,43 +2533,43 @@ YY_RULE_SETUP
 	YY_BREAK
 case 109:
 YY_RULE_SETUP
-#line 323 "../../../vice/src/monitor/mon_lex.l"
+#line 324 "vice/src/monitor/mon_lex.l"
 { return MEM_COMP; }
 	YY_BREAK
 case 110:
 YY_RULE_SETUP
-#line 324 "../../../vice/src/monitor/mon_lex.l"
+#line 325 "vice/src/monitor/mon_lex.l"
 { return MEM_DISK8; }
 	YY_BREAK
 case 111:
 YY_RULE_SETUP
-#line 325 "../../../vice/src/monitor/mon_lex.l"
+#line 326 "vice/src/monitor/mon_lex.l"
 { return MEM_DISK9; }
 	YY_BREAK
 case 112:
 YY_RULE_SETUP
-#line 326 "../../../vice/src/monitor/mon_lex.l"
+#line 327 "vice/src/monitor/mon_lex.l"
 { return MEM_DISK10; }
 	YY_BREAK
 case 113:
 YY_RULE_SETUP
-#line 327 "../../../vice/src/monitor/mon_lex.l"
+#line 328 "vice/src/monitor/mon_lex.l"
 { return MEM_DISK11; }
 	YY_BREAK
 case 114:
 YY_RULE_SETUP
-#line 329 "../../../vice/src/monitor/mon_lex.l"
+#line 330 "vice/src/monitor/mon_lex.l"
 { yylval.str = lib_stralloc(yytext); return CPUTYPE; }
 	YY_BREAK
 case 115:
 YY_RULE_SETUP
-#line 331 "../../../vice/src/monitor/mon_lex.l"
+#line 332 "vice/src/monitor/mon_lex.l"
 
 	YY_BREAK
 case 116:
 /* rule 116 can match eol */
 YY_RULE_SETUP
-#line 332 "../../../vice/src/monitor/mon_lex.l"
+#line 333 "vice/src/monitor/mon_lex.l"
 { dont_match_reg_a = 0;
                  new_cmd = 1;
                  opt_asm = 0;
@@ -2593,916 +2580,916 @@ YY_RULE_SETUP
 	YY_BREAK
 case 117:
 YY_RULE_SETUP
-#line 340 "../../../vice/src/monitor/mon_lex.l"
+#line 341 "vice/src/monitor/mon_lex.l"
 { yytext[yyleng-1] = '\0';
                 yylval.str = lib_stralloc(yytext+1);
                 BEGIN (INITIAL); return FILENAME; }
 	YY_BREAK
 case 118:
 YY_RULE_SETUP
-#line 344 "../../../vice/src/monitor/mon_lex.l"
+#line 345 "vice/src/monitor/mon_lex.l"
 { yylval.str = lib_stralloc(yytext); return BANKNAME; }
 	YY_BREAK
 case 119:
 YY_RULE_SETUP
-#line 346 "../../../vice/src/monitor/mon_lex.l"
+#line 347 "vice/src/monitor/mon_lex.l"
 { yylval.str = lib_stralloc(yytext); return R_O_L; }
 	YY_BREAK
 /* see monitor.c and montypes.h for the commented list */
 
 case 120:
 YY_RULE_SETUP
-#line 350 "../../../vice/src/monitor/mon_lex.l"
+#line 351 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_A; return MON_REGISTER; }		/* 65xx/c64dtv/658xx/6x09/z80 */
 	YY_BREAK
 case 121:
 YY_RULE_SETUP
-#line 351 "../../../vice/src/monitor/mon_lex.l"
+#line 352 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_X; return MON_REGISTER; }		/* 65xx/c64dtv/658xx/6x09 */
 	YY_BREAK
 case 122:
 YY_RULE_SETUP
-#line 352 "../../../vice/src/monitor/mon_lex.l"
+#line 353 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_Y; return MON_REGISTER; }		/* 65xx/c64dtv/658xx/6x09 */
 	YY_BREAK
 case 123:
 YY_RULE_SETUP
-#line 353 "../../../vice/src/monitor/mon_lex.l"
+#line 354 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_PC; return MON_REGISTER; }		/* 65xx/c64dtv/658xx/6x09/z80 */
 	YY_BREAK
 case 124:
 YY_RULE_SETUP
-#line 354 "../../../vice/src/monitor/mon_lex.l"
+#line 355 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_SP; return MON_REGISTER; }		/* 65xx/c64dtv/658xx/6x09/z80 */
 	YY_BREAK
 case 125:
 YY_RULE_SETUP
-#line 355 "../../../vice/src/monitor/mon_lex.l"
+#line 356 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_FLAGS; return MON_REGISTER; }	/* 65xx/c64dtv/658xx */
 	YY_BREAK
 case 126:
 YY_RULE_SETUP
-#line 356 "../../../vice/src/monitor/mon_lex.l"
+#line 357 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_FLAGS; return MON_REGISTER; }	/* 6x09 */
 	YY_BREAK
 case 127:
 YY_RULE_SETUP
-#line 358 "../../../vice/src/monitor/mon_lex.l"
+#line 359 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_B; return MON_REGISTER; }		/* 658xx/6x09/z80 */
 	YY_BREAK
 case 128:
 YY_RULE_SETUP
-#line 359 "../../../vice/src/monitor/mon_lex.l"
+#line 360 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_C; return MON_REGISTER; }		/* 658xx/z80 */
 	YY_BREAK
 case 129:
 YY_RULE_SETUP
-#line 360 "../../../vice/src/monitor/mon_lex.l"
+#line 361 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_DPR; return MON_REGISTER; }	/* 658xx */
 	YY_BREAK
 case 130:
 YY_RULE_SETUP
-#line 361 "../../../vice/src/monitor/mon_lex.l"
+#line 362 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_PBR; return MON_REGISTER; }	/* 658xx */
 	YY_BREAK
 case 131:
 YY_RULE_SETUP
-#line 362 "../../../vice/src/monitor/mon_lex.l"
+#line 363 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_DBR; return MON_REGISTER; }	/* 658xx */
 	YY_BREAK
 case 132:
 YY_RULE_SETUP
-#line 363 "../../../vice/src/monitor/mon_lex.l"
+#line 364 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_E; return MON_REGISTER; }		/* 658xx/6309/z80 */
 	YY_BREAK
 case 133:
 YY_RULE_SETUP
-#line 365 "../../../vice/src/monitor/mon_lex.l"
+#line 366 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_R3; return MON_REGISTER; }		/* c64dtv */
 	YY_BREAK
 case 134:
 YY_RULE_SETUP
-#line 366 "../../../vice/src/monitor/mon_lex.l"
+#line 367 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_R4; return MON_REGISTER; }		/* c64dtv */
 	YY_BREAK
 case 135:
 YY_RULE_SETUP
-#line 367 "../../../vice/src/monitor/mon_lex.l"
+#line 368 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_R5; return MON_REGISTER; }		/* c64dtv */
 	YY_BREAK
 case 136:
 YY_RULE_SETUP
-#line 368 "../../../vice/src/monitor/mon_lex.l"
+#line 369 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_R6; return MON_REGISTER; }		/* c64dtv */
 	YY_BREAK
 case 137:
 YY_RULE_SETUP
-#line 369 "../../../vice/src/monitor/mon_lex.l"
+#line 370 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_R7; return MON_REGISTER; }		/* c64dtv */
 	YY_BREAK
 case 138:
 YY_RULE_SETUP
-#line 370 "../../../vice/src/monitor/mon_lex.l"
+#line 371 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_R8; return MON_REGISTER; }		/* c64dtv */
 	YY_BREAK
 case 139:
 YY_RULE_SETUP
-#line 371 "../../../vice/src/monitor/mon_lex.l"
+#line 372 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_R9; return MON_REGISTER; }		/* c64dtv */
 	YY_BREAK
 case 140:
 YY_RULE_SETUP
-#line 372 "../../../vice/src/monitor/mon_lex.l"
+#line 373 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_R10; return MON_REGISTER; }	/* c64dtv */
 	YY_BREAK
 case 141:
 YY_RULE_SETUP
-#line 373 "../../../vice/src/monitor/mon_lex.l"
+#line 374 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_R11; return MON_REGISTER; }	/* c64dtv */
 	YY_BREAK
 case 142:
 YY_RULE_SETUP
-#line 374 "../../../vice/src/monitor/mon_lex.l"
+#line 375 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_R12; return MON_REGISTER; }	/* c64dtv */
 	YY_BREAK
 case 143:
 YY_RULE_SETUP
-#line 375 "../../../vice/src/monitor/mon_lex.l"
+#line 376 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_R13; return MON_REGISTER; }	/* c64dtv */
 	YY_BREAK
 case 144:
 YY_RULE_SETUP
-#line 376 "../../../vice/src/monitor/mon_lex.l"
+#line 377 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_R14; return MON_REGISTER; }	/* c64dtv */
 	YY_BREAK
 case 145:
 YY_RULE_SETUP
-#line 377 "../../../vice/src/monitor/mon_lex.l"
+#line 378 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_R15; return MON_REGISTER; }	/* c64dtv */
 	YY_BREAK
 case 146:
 YY_RULE_SETUP
-#line 378 "../../../vice/src/monitor/mon_lex.l"
+#line 379 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_ACM; return MON_REGISTER; }	/* c64dtv */
 	YY_BREAK
 case 147:
 YY_RULE_SETUP
-#line 379 "../../../vice/src/monitor/mon_lex.l"
+#line 380 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_YXM; return MON_REGISTER; }	/* c64dtv */
 	YY_BREAK
 case 148:
 YY_RULE_SETUP
-#line 381 "../../../vice/src/monitor/mon_lex.l"
+#line 382 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_D; return MON_REGISTER; }		/* 6x09/z80 */
 	YY_BREAK
 case 149:
 YY_RULE_SETUP
-#line 382 "../../../vice/src/monitor/mon_lex.l"
+#line 383 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_DP; return MON_REGISTER; }		/* 6x09 */
 	YY_BREAK
 case 150:
 YY_RULE_SETUP
-#line 383 "../../../vice/src/monitor/mon_lex.l"
+#line 384 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_U; return MON_REGISTER; }		/* 6x09 */
 	YY_BREAK
 case 151:
 YY_RULE_SETUP
-#line 385 "../../../vice/src/monitor/mon_lex.l"
+#line 386 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_AF; return MON_REGISTER; }		/* z80 */
 	YY_BREAK
 case 152:
 YY_RULE_SETUP
-#line 386 "../../../vice/src/monitor/mon_lex.l"
+#line 387 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_BC; return MON_REGISTER; }		/* z80 */
 	YY_BREAK
 case 153:
 YY_RULE_SETUP
-#line 387 "../../../vice/src/monitor/mon_lex.l"
+#line 388 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_DE; return MON_REGISTER; }		/* z80 */
 	YY_BREAK
 case 154:
 YY_RULE_SETUP
-#line 388 "../../../vice/src/monitor/mon_lex.l"
+#line 389 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_HL; return MON_REGISTER; }		/* z80 */
 	YY_BREAK
 case 155:
 YY_RULE_SETUP
-#line 389 "../../../vice/src/monitor/mon_lex.l"
+#line 390 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_IX; return MON_REGISTER; }		/* z80 */
 	YY_BREAK
 case 156:
 YY_RULE_SETUP
-#line 390 "../../../vice/src/monitor/mon_lex.l"
+#line 391 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_IY; return MON_REGISTER; }		/* z80 */
 	YY_BREAK
 case 157:
 YY_RULE_SETUP
-#line 391 "../../../vice/src/monitor/mon_lex.l"
+#line 392 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_I; return MON_REGISTER; }		/* z80 */
 	YY_BREAK
 case 158:
 YY_RULE_SETUP
-#line 392 "../../../vice/src/monitor/mon_lex.l"
+#line 393 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_R; return MON_REGISTER; }		/* z80 */
 	YY_BREAK
 case 159:
 YY_RULE_SETUP
-#line 393 "../../../vice/src/monitor/mon_lex.l"
+#line 394 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_AF2; return MON_REGISTER; }	/* z80 */
 	YY_BREAK
 case 160:
 YY_RULE_SETUP
-#line 394 "../../../vice/src/monitor/mon_lex.l"
+#line 395 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_BC2; return MON_REGISTER; }	/* z80 */
 	YY_BREAK
 case 161:
 YY_RULE_SETUP
-#line 395 "../../../vice/src/monitor/mon_lex.l"
+#line 396 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_DE2; return MON_REGISTER; }	/* z80 */
 	YY_BREAK
 case 162:
 YY_RULE_SETUP
-#line 396 "../../../vice/src/monitor/mon_lex.l"
+#line 397 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_HL2; return MON_REGISTER; }	/* z80 */
 	YY_BREAK
 case 163:
 YY_RULE_SETUP
-#line 398 "../../../vice/src/monitor/mon_lex.l"
+#line 399 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_F; return MON_REGISTER; }		/* 6309 */
 	YY_BREAK
 case 164:
 YY_RULE_SETUP
-#line 399 "../../../vice/src/monitor/mon_lex.l"
+#line 400 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_W; return MON_REGISTER; }		/* 6309 */
 	YY_BREAK
 case 165:
 YY_RULE_SETUP
-#line 400 "../../../vice/src/monitor/mon_lex.l"
+#line 401 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_Q; return MON_REGISTER; }		/* 6309 */
 	YY_BREAK
 case 166:
 YY_RULE_SETUP
-#line 401 "../../../vice/src/monitor/mon_lex.l"
+#line 402 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_V; return MON_REGISTER; }		/* 6309 */
 	YY_BREAK
 case 167:
 YY_RULE_SETUP
-#line 402 "../../../vice/src/monitor/mon_lex.l"
+#line 403 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_MD; return MON_REGISTER; }		/* 6309 */
 	YY_BREAK
 case 168:
 YY_RULE_SETUP
-#line 404 "../../../vice/src/monitor/mon_lex.l"
+#line 405 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_H; return MON_REGISTER; }		/* z80 */
 	YY_BREAK
 case 169:
 YY_RULE_SETUP
-#line 405 "../../../vice/src/monitor/mon_lex.l"
+#line 406 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_L; return MON_REGISTER; }		/* z80 */
 	YY_BREAK
 case 170:
 YY_RULE_SETUP
-#line 406 "../../../vice/src/monitor/mon_lex.l"
+#line 407 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_IXL; return MON_REGISTER; }	/* z80 */
 	YY_BREAK
 case 171:
 YY_RULE_SETUP
-#line 407 "../../../vice/src/monitor/mon_lex.l"
+#line 408 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_IXH; return MON_REGISTER; }	/* z80 */
 	YY_BREAK
 case 172:
 YY_RULE_SETUP
-#line 408 "../../../vice/src/monitor/mon_lex.l"
+#line 409 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_IYL; return MON_REGISTER; }	/* z80 */
 	YY_BREAK
 case 173:
 YY_RULE_SETUP
-#line 409 "../../../vice/src/monitor/mon_lex.l"
+#line 410 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_IYH; return MON_REGISTER; }	/* z80 */
 	YY_BREAK
 
 
 case 174:
 YY_RULE_SETUP
-#line 413 "../../../vice/src/monitor/mon_lex.l"
+#line 414 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_EQU; return COMPARE_OP; }
 	YY_BREAK
 case 175:
 YY_RULE_SETUP
-#line 414 "../../../vice/src/monitor/mon_lex.l"
+#line 415 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_NEQ; return COMPARE_OP; }
 	YY_BREAK
 case 176:
 YY_RULE_SETUP
-#line 415 "../../../vice/src/monitor/mon_lex.l"
+#line 416 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_LTE; return COMPARE_OP; }
 	YY_BREAK
 case 177:
 YY_RULE_SETUP
-#line 416 "../../../vice/src/monitor/mon_lex.l"
+#line 417 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_LT;  return COMPARE_OP; }
 	YY_BREAK
 case 178:
 YY_RULE_SETUP
-#line 417 "../../../vice/src/monitor/mon_lex.l"
+#line 418 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_GT;  return COMPARE_OP; }
 	YY_BREAK
 case 179:
 YY_RULE_SETUP
-#line 418 "../../../vice/src/monitor/mon_lex.l"
+#line 419 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_GTE; return COMPARE_OP; }
 	YY_BREAK
 case 180:
 YY_RULE_SETUP
-#line 419 "../../../vice/src/monitor/mon_lex.l"
+#line 420 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_AND; return COMPARE_OP; }
 	YY_BREAK
 case 181:
 YY_RULE_SETUP
-#line 420 "../../../vice/src/monitor/mon_lex.l"
+#line 421 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_OR;  return COMPARE_OP; }
 	YY_BREAK
 case 182:
 YY_RULE_SETUP
-#line 422 "../../../vice/src/monitor/mon_lex.l"
+#line 423 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_A; return MON_REGISTER; }		/* 65xx/c64dtv/658xx/6x09/z80 */
 	YY_BREAK
 case 183:
 YY_RULE_SETUP
-#line 423 "../../../vice/src/monitor/mon_lex.l"
+#line 424 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_X; return MON_REGISTER; }		/* 65xx/c64dtv/658xx/6x09 */
 	YY_BREAK
 case 184:
 YY_RULE_SETUP
-#line 424 "../../../vice/src/monitor/mon_lex.l"
+#line 425 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_Y; return MON_REGISTER; }		/* 65xx/c64dtv/658xx/6x09 */
 	YY_BREAK
 case 185:
 YY_RULE_SETUP
-#line 425 "../../../vice/src/monitor/mon_lex.l"
+#line 426 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_PC; return MON_REGISTER; }		/* 65xx/c64dtv/658xx/6x09/z80 */
 	YY_BREAK
 case 186:
 YY_RULE_SETUP
-#line 426 "../../../vice/src/monitor/mon_lex.l"
+#line 427 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_SP; return MON_REGISTER; }		/* 65xx/c64dtv/658xx/6x09/z80 */
 	YY_BREAK
 case 187:
 YY_RULE_SETUP
-#line 427 "../../../vice/src/monitor/mon_lex.l"
+#line 428 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_FLAGS; return MON_REGISTER; }	/* 65xx/c64dtv/658xx */
 	YY_BREAK
 case 188:
 YY_RULE_SETUP
-#line 428 "../../../vice/src/monitor/mon_lex.l"
+#line 429 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_FLAGS; return MON_REGISTER; }	/* 6x09 */
 	YY_BREAK
 case 189:
 YY_RULE_SETUP
-#line 430 "../../../vice/src/monitor/mon_lex.l"
+#line 431 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_B; return MON_REGISTER; }		/* 658xx/6x09/z80 */
 	YY_BREAK
 case 190:
 YY_RULE_SETUP
-#line 431 "../../../vice/src/monitor/mon_lex.l"
+#line 432 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_C; return MON_REGISTER; }		/* 658xx/z80 */
 	YY_BREAK
 case 191:
 YY_RULE_SETUP
-#line 432 "../../../vice/src/monitor/mon_lex.l"
+#line 433 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_DPR; return MON_REGISTER; }		/* 658xx */
 	YY_BREAK
 case 192:
 YY_RULE_SETUP
-#line 433 "../../../vice/src/monitor/mon_lex.l"
+#line 434 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_PBR; return MON_REGISTER; }		/* 658xx */
 	YY_BREAK
 case 193:
 YY_RULE_SETUP
-#line 434 "../../../vice/src/monitor/mon_lex.l"
+#line 435 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_DBR; return MON_REGISTER; }		/* 658xx */
 	YY_BREAK
 case 194:
 YY_RULE_SETUP
-#line 435 "../../../vice/src/monitor/mon_lex.l"
+#line 436 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_E; return MON_REGISTER; }		/* 658xx/6309/z80 */
 	YY_BREAK
 case 195:
 YY_RULE_SETUP
-#line 437 "../../../vice/src/monitor/mon_lex.l"
+#line 438 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_R3; return MON_REGISTER; }		/* c64dtv */
 	YY_BREAK
 case 196:
 YY_RULE_SETUP
-#line 438 "../../../vice/src/monitor/mon_lex.l"
+#line 439 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_R4; return MON_REGISTER; }		/* c64dtv */
 	YY_BREAK
 case 197:
 YY_RULE_SETUP
-#line 439 "../../../vice/src/monitor/mon_lex.l"
+#line 440 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_R5; return MON_REGISTER; }		/* c64dtv */
 	YY_BREAK
 case 198:
 YY_RULE_SETUP
-#line 440 "../../../vice/src/monitor/mon_lex.l"
+#line 441 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_R6; return MON_REGISTER; }		/* c64dtv */
 	YY_BREAK
 case 199:
 YY_RULE_SETUP
-#line 441 "../../../vice/src/monitor/mon_lex.l"
+#line 442 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_R7; return MON_REGISTER; }		/* c64dtv */
 	YY_BREAK
 case 200:
 YY_RULE_SETUP
-#line 442 "../../../vice/src/monitor/mon_lex.l"
+#line 443 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_R8; return MON_REGISTER; }		/* c64dtv */
 	YY_BREAK
 case 201:
 YY_RULE_SETUP
-#line 443 "../../../vice/src/monitor/mon_lex.l"
+#line 444 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_R9; return MON_REGISTER; }		/* c64dtv */
 	YY_BREAK
 case 202:
 YY_RULE_SETUP
-#line 444 "../../../vice/src/monitor/mon_lex.l"
+#line 445 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_R10; return MON_REGISTER; }		/* c64dtv */
 	YY_BREAK
 case 203:
 YY_RULE_SETUP
-#line 445 "../../../vice/src/monitor/mon_lex.l"
+#line 446 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_R11; return MON_REGISTER; }		/* c64dtv */
 	YY_BREAK
 case 204:
 YY_RULE_SETUP
-#line 446 "../../../vice/src/monitor/mon_lex.l"
+#line 447 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_R12; return MON_REGISTER; }		/* c64dtv */
 	YY_BREAK
 case 205:
 YY_RULE_SETUP
-#line 447 "../../../vice/src/monitor/mon_lex.l"
+#line 448 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_R13; return MON_REGISTER; }		/* c64dtv */
 	YY_BREAK
 case 206:
 YY_RULE_SETUP
-#line 448 "../../../vice/src/monitor/mon_lex.l"
+#line 449 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_R14; return MON_REGISTER; }		/* c64dtv */
 	YY_BREAK
 case 207:
 YY_RULE_SETUP
-#line 449 "../../../vice/src/monitor/mon_lex.l"
+#line 450 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_R15; return MON_REGISTER; }		/* c64dtv */
 	YY_BREAK
 case 208:
 YY_RULE_SETUP
-#line 450 "../../../vice/src/monitor/mon_lex.l"
+#line 451 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_ACM; return MON_REGISTER; }		/* c64dtv */
 	YY_BREAK
 case 209:
 YY_RULE_SETUP
-#line 451 "../../../vice/src/monitor/mon_lex.l"
+#line 452 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_YXM; return MON_REGISTER; }		/* c64dtv */
 	YY_BREAK
 case 210:
 YY_RULE_SETUP
-#line 453 "../../../vice/src/monitor/mon_lex.l"
+#line 454 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_D; return MON_REGISTER; }		/* 6x09/z80 */
 	YY_BREAK
 case 211:
 YY_RULE_SETUP
-#line 454 "../../../vice/src/monitor/mon_lex.l"
+#line 455 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_DP; return MON_REGISTER; }		/* 6x09 */
 	YY_BREAK
 case 212:
 YY_RULE_SETUP
-#line 455 "../../../vice/src/monitor/mon_lex.l"
+#line 456 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_U; return MON_REGISTER; }		/* 6x09 */
 	YY_BREAK
 case 213:
 YY_RULE_SETUP
-#line 457 "../../../vice/src/monitor/mon_lex.l"
+#line 458 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_AF; return MON_REGISTER; }		/* z80 */
 	YY_BREAK
 case 214:
 YY_RULE_SETUP
-#line 458 "../../../vice/src/monitor/mon_lex.l"
+#line 459 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_BC; return MON_REGISTER; }		/* z80 */
 	YY_BREAK
 case 215:
 YY_RULE_SETUP
-#line 459 "../../../vice/src/monitor/mon_lex.l"
+#line 460 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_DE; return MON_REGISTER; }		/* z80 */
 	YY_BREAK
 case 216:
 YY_RULE_SETUP
-#line 460 "../../../vice/src/monitor/mon_lex.l"
+#line 461 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_HL; return MON_REGISTER; }		/* z80 */
 	YY_BREAK
 case 217:
 YY_RULE_SETUP
-#line 461 "../../../vice/src/monitor/mon_lex.l"
+#line 462 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_IX; return MON_REGISTER; }		/* z80 */
 	YY_BREAK
 case 218:
 YY_RULE_SETUP
-#line 462 "../../../vice/src/monitor/mon_lex.l"
+#line 463 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_IY; return MON_REGISTER; }		/* z80 */
 	YY_BREAK
 case 219:
 YY_RULE_SETUP
-#line 463 "../../../vice/src/monitor/mon_lex.l"
+#line 464 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_I; return MON_REGISTER; }		/* z80 */
 	YY_BREAK
 case 220:
 YY_RULE_SETUP
-#line 464 "../../../vice/src/monitor/mon_lex.l"
+#line 465 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_R; return MON_REGISTER; }		/* z80 */
 	YY_BREAK
 case 221:
 YY_RULE_SETUP
-#line 465 "../../../vice/src/monitor/mon_lex.l"
+#line 466 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_AF2; return MON_REGISTER; }		/* z80 */
 	YY_BREAK
 case 222:
 YY_RULE_SETUP
-#line 466 "../../../vice/src/monitor/mon_lex.l"
+#line 467 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_BC2; return MON_REGISTER; }		/* z80 */
 	YY_BREAK
 case 223:
 YY_RULE_SETUP
-#line 467 "../../../vice/src/monitor/mon_lex.l"
+#line 468 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_DE2; return MON_REGISTER; }		/* z80 */
 	YY_BREAK
 case 224:
 YY_RULE_SETUP
-#line 468 "../../../vice/src/monitor/mon_lex.l"
+#line 469 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_HL2; return MON_REGISTER; }		/* z80 */
 	YY_BREAK
 case 225:
 YY_RULE_SETUP
-#line 470 "../../../vice/src/monitor/mon_lex.l"
+#line 471 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_F; return MON_REGISTER; }		/* 6309 */
 	YY_BREAK
 case 226:
 YY_RULE_SETUP
-#line 471 "../../../vice/src/monitor/mon_lex.l"
+#line 472 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_W; return MON_REGISTER; }		/* 6309 */
 	YY_BREAK
 case 227:
 YY_RULE_SETUP
-#line 472 "../../../vice/src/monitor/mon_lex.l"
+#line 473 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_Q; return MON_REGISTER; }		/* 6309 */
 	YY_BREAK
 case 228:
 YY_RULE_SETUP
-#line 473 "../../../vice/src/monitor/mon_lex.l"
+#line 474 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_V; return MON_REGISTER; }		/* 6309 */
 	YY_BREAK
 case 229:
 YY_RULE_SETUP
-#line 474 "../../../vice/src/monitor/mon_lex.l"
+#line 475 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_MD; return MON_REGISTER; }		/* 6309 */
 	YY_BREAK
 case 230:
 YY_RULE_SETUP
-#line 476 "../../../vice/src/monitor/mon_lex.l"
+#line 477 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_H; return MON_REGISTER; }		/* z80 */
 	YY_BREAK
 case 231:
 YY_RULE_SETUP
-#line 477 "../../../vice/src/monitor/mon_lex.l"
+#line 478 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_L; return MON_REGISTER; }		/* z80 */
 	YY_BREAK
 case 232:
 YY_RULE_SETUP
-#line 478 "../../../vice/src/monitor/mon_lex.l"
+#line 479 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_IXH; return MON_REGISTER; }		/* z80 */
 	YY_BREAK
 case 233:
 YY_RULE_SETUP
-#line 479 "../../../vice/src/monitor/mon_lex.l"
+#line 480 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_IXL; return MON_REGISTER; }		/* z80 */
 	YY_BREAK
 case 234:
 YY_RULE_SETUP
-#line 480 "../../../vice/src/monitor/mon_lex.l"
+#line 481 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_IYH; return MON_REGISTER; }		/* z80 */
 	YY_BREAK
 case 235:
 YY_RULE_SETUP
-#line 481 "../../../vice/src/monitor/mon_lex.l"
+#line 482 "vice/src/monitor/mon_lex.l"
 { yylval.i = e_IYL; return MON_REGISTER; }		/* z80 */
 	YY_BREAK
 case 236:
 YY_RULE_SETUP
-#line 483 "../../../vice/src/monitor/mon_lex.l"
+#line 484 "vice/src/monitor/mon_lex.l"
 { return L_PAREN; }
 	YY_BREAK
 case 237:
 YY_RULE_SETUP
-#line 484 "../../../vice/src/monitor/mon_lex.l"
+#line 485 "vice/src/monitor/mon_lex.l"
 { return R_PAREN; }
 	YY_BREAK
 case 238:
 YY_RULE_SETUP
-#line 485 "../../../vice/src/monitor/mon_lex.l"
+#line 486 "vice/src/monitor/mon_lex.l"
 { return L_BRACKET; }
 	YY_BREAK
 case 239:
 YY_RULE_SETUP
-#line 486 "../../../vice/src/monitor/mon_lex.l"
+#line 487 "vice/src/monitor/mon_lex.l"
 { return R_BRACKET; }
 	YY_BREAK
 
 case 240:
 YY_RULE_SETUP
-#line 489 "../../../vice/src/monitor/mon_lex.l"
+#line 490 "vice/src/monitor/mon_lex.l"
 {
     yylval.str = lib_stralloc(yytext); return OPCODE; }
 	YY_BREAK
 case 241:
 YY_RULE_SETUP
-#line 491 "../../../vice/src/monitor/mon_lex.l"
+#line 492 "vice/src/monitor/mon_lex.l"
 {
     yylval.str = lib_stralloc(yytext); return OPCODE; }
 	YY_BREAK
 case 242:
 YY_RULE_SETUP
-#line 493 "../../../vice/src/monitor/mon_lex.l"
+#line 494 "vice/src/monitor/mon_lex.l"
 {
     yylval.str = lib_stralloc(yytext); return OPCODE; }
 	YY_BREAK
 case 243:
 YY_RULE_SETUP
-#line 495 "../../../vice/src/monitor/mon_lex.l"
+#line 496 "vice/src/monitor/mon_lex.l"
 {
     yylval.str = lib_stralloc(yytext); return OPCODE; }
 	YY_BREAK
 case 244:
 YY_RULE_SETUP
-#line 497 "../../../vice/src/monitor/mon_lex.l"
+#line 498 "vice/src/monitor/mon_lex.l"
 {
     yylval.str = lib_stralloc(yytext); return OPCODE; }
 	YY_BREAK
 case 245:
 YY_RULE_SETUP
-#line 499 "../../../vice/src/monitor/mon_lex.l"
+#line 500 "vice/src/monitor/mon_lex.l"
 {
     yylval.str = lib_stralloc(yytext); return OPCODE; }
 	YY_BREAK
 case 246:
 YY_RULE_SETUP
-#line 501 "../../../vice/src/monitor/mon_lex.l"
+#line 502 "vice/src/monitor/mon_lex.l"
 {
     yylval.str = lib_stralloc(yytext); return OPCODE; }
 	YY_BREAK
 case 247:
 YY_RULE_SETUP
-#line 503 "../../../vice/src/monitor/mon_lex.l"
+#line 504 "vice/src/monitor/mon_lex.l"
 {
     yylval.str = lib_stralloc(yytext); return OPCODE; }
 	YY_BREAK
 case 248:
 YY_RULE_SETUP
-#line 505 "../../../vice/src/monitor/mon_lex.l"
+#line 506 "vice/src/monitor/mon_lex.l"
 { return REG_AF; }
 	YY_BREAK
 case 249:
 YY_RULE_SETUP
-#line 506 "../../../vice/src/monitor/mon_lex.l"
+#line 507 "vice/src/monitor/mon_lex.l"
 { return REG_BC; }
 	YY_BREAK
 case 250:
 YY_RULE_SETUP
-#line 507 "../../../vice/src/monitor/mon_lex.l"
+#line 508 "vice/src/monitor/mon_lex.l"
 { return REG_DE; }
 	YY_BREAK
 case 251:
 YY_RULE_SETUP
-#line 508 "../../../vice/src/monitor/mon_lex.l"
+#line 509 "vice/src/monitor/mon_lex.l"
 { return REG_HL; }
 	YY_BREAK
 case 252:
 YY_RULE_SETUP
-#line 509 "../../../vice/src/monitor/mon_lex.l"
+#line 510 "vice/src/monitor/mon_lex.l"
 { return REG_IX; }
 	YY_BREAK
 case 253:
 YY_RULE_SETUP
-#line 510 "../../../vice/src/monitor/mon_lex.l"
+#line 511 "vice/src/monitor/mon_lex.l"
 { return REG_IXH; }
 	YY_BREAK
 case 254:
 YY_RULE_SETUP
-#line 511 "../../../vice/src/monitor/mon_lex.l"
+#line 512 "vice/src/monitor/mon_lex.l"
 { return REG_IXL; }
 	YY_BREAK
 case 255:
 YY_RULE_SETUP
-#line 512 "../../../vice/src/monitor/mon_lex.l"
+#line 513 "vice/src/monitor/mon_lex.l"
 { return REG_IY; }
 	YY_BREAK
 case 256:
 YY_RULE_SETUP
-#line 513 "../../../vice/src/monitor/mon_lex.l"
+#line 514 "vice/src/monitor/mon_lex.l"
 { return REG_IYH; }
 	YY_BREAK
 case 257:
 YY_RULE_SETUP
-#line 514 "../../../vice/src/monitor/mon_lex.l"
+#line 515 "vice/src/monitor/mon_lex.l"
 { return REG_IYL; }
 	YY_BREAK
 case 258:
 YY_RULE_SETUP
-#line 515 "../../../vice/src/monitor/mon_lex.l"
+#line 516 "vice/src/monitor/mon_lex.l"
 { yylval.str = lib_stralloc(yytext); return OPCODE; }
 	YY_BREAK
 case 259:
 YY_RULE_SETUP
-#line 516 "../../../vice/src/monitor/mon_lex.l"
+#line 517 "vice/src/monitor/mon_lex.l"
 { yylval.str = lib_stralloc(yytext); return LABEL; }
 	YY_BREAK
 case 260:
 /* rule 260 can match eol */
 YY_RULE_SETUP
-#line 518 "../../../vice/src/monitor/mon_lex.l"
+#line 519 "vice/src/monitor/mon_lex.l"
 { if (!dont_match_reg_a) return REG_A;
                                         yylval.i = 0x0a; return H_NUMBER; }
 	YY_BREAK
 case 261:
 YY_RULE_SETUP
-#line 520 "../../../vice/src/monitor/mon_lex.l"
+#line 521 "vice/src/monitor/mon_lex.l"
 { return REG_B; }
 	YY_BREAK
 case 262:
 YY_RULE_SETUP
-#line 521 "../../../vice/src/monitor/mon_lex.l"
+#line 522 "vice/src/monitor/mon_lex.l"
 { return REG_C; }
 	YY_BREAK
 case 263:
 YY_RULE_SETUP
-#line 522 "../../../vice/src/monitor/mon_lex.l"
+#line 523 "vice/src/monitor/mon_lex.l"
 { return REG_D; }
 	YY_BREAK
 case 264:
 YY_RULE_SETUP
-#line 523 "../../../vice/src/monitor/mon_lex.l"
+#line 524 "vice/src/monitor/mon_lex.l"
 { return REG_E; }
 	YY_BREAK
 case 265:
 YY_RULE_SETUP
-#line 524 "../../../vice/src/monitor/mon_lex.l"
+#line 525 "vice/src/monitor/mon_lex.l"
 { return REG_H; }
 	YY_BREAK
 case 266:
 YY_RULE_SETUP
-#line 525 "../../../vice/src/monitor/mon_lex.l"
+#line 526 "vice/src/monitor/mon_lex.l"
 { return REG_L; }
 	YY_BREAK
 case 267:
 YY_RULE_SETUP
-#line 526 "../../../vice/src/monitor/mon_lex.l"
+#line 527 "vice/src/monitor/mon_lex.l"
 { return REG_S; }
 	YY_BREAK
 case 268:
 YY_RULE_SETUP
-#line 527 "../../../vice/src/monitor/mon_lex.l"
+#line 528 "vice/src/monitor/mon_lex.l"
 { return REG_U; }
 	YY_BREAK
 case 269:
 YY_RULE_SETUP
-#line 528 "../../../vice/src/monitor/mon_lex.l"
+#line 529 "vice/src/monitor/mon_lex.l"
 { return REG_X; }
 	YY_BREAK
 case 270:
 YY_RULE_SETUP
-#line 529 "../../../vice/src/monitor/mon_lex.l"
+#line 530 "vice/src/monitor/mon_lex.l"
 { return REG_Y; }
 	YY_BREAK
 case 271:
 YY_RULE_SETUP
-#line 531 "../../../vice/src/monitor/mon_lex.l"
+#line 532 "vice/src/monitor/mon_lex.l"
 { dont_match_reg_a = 1; return L_PAREN; }
 	YY_BREAK
 case 272:
 YY_RULE_SETUP
-#line 532 "../../../vice/src/monitor/mon_lex.l"
+#line 533 "vice/src/monitor/mon_lex.l"
 { dont_match_reg_a = 0; return R_PAREN; }
 	YY_BREAK
 case 273:
 YY_RULE_SETUP
-#line 533 "../../../vice/src/monitor/mon_lex.l"
+#line 534 "vice/src/monitor/mon_lex.l"
 { dont_match_reg_a = 1; return L_BRACKET; }
 	YY_BREAK
 case 274:
 YY_RULE_SETUP
-#line 534 "../../../vice/src/monitor/mon_lex.l"
+#line 535 "vice/src/monitor/mon_lex.l"
 { dont_match_reg_a = 0; return R_BRACKET; }
 	YY_BREAK
 case 275:
 YY_RULE_SETUP
-#line 535 "../../../vice/src/monitor/mon_lex.l"
+#line 536 "vice/src/monitor/mon_lex.l"
 { dont_match_reg_a = 1; return ARG_IMMEDIATE; }
 	YY_BREAK
 case 276:
 YY_RULE_SETUP
-#line 536 "../../../vice/src/monitor/mon_lex.l"
+#line 537 "vice/src/monitor/mon_lex.l"
 { dont_match_reg_a = 0; return INST_SEP; }
 	YY_BREAK
 case 277:
 YY_RULE_SETUP
-#line 537 "../../../vice/src/monitor/mon_lex.l"
+#line 538 "vice/src/monitor/mon_lex.l"
 { dont_match_reg_a = 1; return LESS_THAN; }
 	YY_BREAK
 case 278:
 YY_RULE_SETUP
-#line 538 "../../../vice/src/monitor/mon_lex.l"
+#line 539 "vice/src/monitor/mon_lex.l"
 { return PLUS; }
 	YY_BREAK
 case 279:
 YY_RULE_SETUP
-#line 539 "../../../vice/src/monitor/mon_lex.l"
+#line 540 "vice/src/monitor/mon_lex.l"
 { return MINUS; }
 	YY_BREAK
 
 case 280:
 YY_RULE_SETUP
-#line 542 "../../../vice/src/monitor/mon_lex.l"
+#line 543 "vice/src/monitor/mon_lex.l"
 { yylval.str = lib_stralloc(yytext); return H_RANGE_GUESS; }
 	YY_BREAK
 case 281:
 YY_RULE_SETUP
-#line 543 "../../../vice/src/monitor/mon_lex.l"
+#line 544 "vice/src/monitor/mon_lex.l"
 { yylval.str = lib_stralloc(yytext); return B_NUMBER_GUESS; }
 	YY_BREAK
 case 282:
 YY_RULE_SETUP
-#line 544 "../../../vice/src/monitor/mon_lex.l"
+#line 545 "vice/src/monitor/mon_lex.l"
 { yylval.i = strtol(yytext+1, NULL, 2); return B_NUMBER; }
 	YY_BREAK
 case 283:
 YY_RULE_SETUP
-#line 545 "../../../vice/src/monitor/mon_lex.l"
+#line 546 "vice/src/monitor/mon_lex.l"
 { yylval.i = strtol(yytext+1, NULL, 8); return O_NUMBER; }
 	YY_BREAK
 case 284:
 YY_RULE_SETUP
-#line 546 "../../../vice/src/monitor/mon_lex.l"
+#line 547 "vice/src/monitor/mon_lex.l"
 { yylval.str = lib_stralloc(yytext); return O_NUMBER_GUESS; }
 	YY_BREAK
 case 285:
 YY_RULE_SETUP
-#line 547 "../../../vice/src/monitor/mon_lex.l"
+#line 548 "vice/src/monitor/mon_lex.l"
 { yylval.i = strtol(yytext+1, NULL, 10); return D_NUMBER; }
 	YY_BREAK
 case 286:
 YY_RULE_SETUP
-#line 548 "../../../vice/src/monitor/mon_lex.l"
+#line 549 "vice/src/monitor/mon_lex.l"
 { yylval.str = lib_stralloc(yytext); return D_NUMBER_GUESS; }
 	YY_BREAK
 case 287:
 YY_RULE_SETUP
-#line 549 "../../../vice/src/monitor/mon_lex.l"
+#line 550 "vice/src/monitor/mon_lex.l"
 { yylval.i = 0x00; return MASK; }
 	YY_BREAK
 case 288:
 YY_RULE_SETUP
-#line 550 "../../../vice/src/monitor/mon_lex.l"
+#line 551 "vice/src/monitor/mon_lex.l"
 { yylval.i = strtol(yytext+1, NULL, 16); return H_NUMBER; }
 	YY_BREAK
 case 289:
 YY_RULE_SETUP
-#line 551 "../../../vice/src/monitor/mon_lex.l"
+#line 552 "vice/src/monitor/mon_lex.l"
 { yylval.i = strtol(yytext, NULL, 16); return H_NUMBER; }
 	YY_BREAK
 
 case 290:
 YY_RULE_SETUP
-#line 554 "../../../vice/src/monitor/mon_lex.l"
+#line 555 "vice/src/monitor/mon_lex.l"
 { return EQUALS; }
 	YY_BREAK
 case 291:
 YY_RULE_SETUP
-#line 555 "../../../vice/src/monitor/mon_lex.l"
+#line 556 "vice/src/monitor/mon_lex.l"
 { return COMMA; }
 	YY_BREAK
 /* After a label assignment there may be a ; comment to EOL */
 case 292:
 YY_RULE_SETUP
-#line 558 "../../../vice/src/monitor/mon_lex.l"
+#line 559 "vice/src/monitor/mon_lex.l"
 { return LABEL_ASGN_COMMENT; }
 	YY_BREAK
 case 293:
 /* rule 293 can match eol */
 YY_RULE_SETUP
-#line 560 "../../../vice/src/monitor/mon_lex.l"
+#line 561 "vice/src/monitor/mon_lex.l"
 { return yytext[0]; }
 	YY_BREAK
 case 294:
 YY_RULE_SETUP
-#line 562 "../../../vice/src/monitor/mon_lex.l"
+#line 563 "vice/src/monitor/mon_lex.l"
 ECHO;
 	YY_BREAK
-#line 3506 "../../../vice/src/monitor/mon_lex.c"
+#line 3492 "<stdout>"
 			case YY_STATE_EOF(INITIAL):
 			case YY_STATE_EOF(FNAME):
 			case YY_STATE_EOF(CMD):
@@ -3591,7 +3578,7 @@ ECHO;
 				{
 				(yy_did_buffer_switch_on_eof) = 0;
 
-				if ( yywrap( ) )
+				if ( yywrap(  ) )
 					{
 					/* Note: because we've taken care in
 					 * yy_get_next_buffer() to have set up
@@ -3656,9 +3643,9 @@ ECHO;
  */
 static int yy_get_next_buffer (void)
 {
-    	register char *dest = YY_CURRENT_BUFFER_LVALUE->yy_ch_buf;
-	register char *source = (yytext_ptr);
-	register int number_to_move, i;
+    	char *dest = YY_CURRENT_BUFFER_LVALUE->yy_ch_buf;
+	char *source = (yytext_ptr);
+	int number_to_move, i;
 	int ret_val;
 
 	if ( (yy_c_buf_p) > &YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[(yy_n_chars) + 1] )
@@ -3687,7 +3674,7 @@ static int yy_get_next_buffer (void)
 	/* Try to read more data. */
 
 	/* First move last chars to start of buffer. */
-	number_to_move = (int) ((yy_c_buf_p) - (yytext_ptr)) - 1;
+	number_to_move = (int) ((yy_c_buf_p) - (yytext_ptr) - 1);
 
 	for ( i = 0; i < number_to_move; ++i )
 		*(dest++) = *(source++);
@@ -3726,7 +3713,7 @@ static int yy_get_next_buffer (void)
 		if ( number_to_move == YY_MORE_ADJ )
 			{
 			ret_val = EOB_ACT_END_OF_FILE;
-			yyrestart(yyin  );
+			yyrestart( yyin  );
 			}
 
 		else
@@ -3740,12 +3727,15 @@ static int yy_get_next_buffer (void)
 	else
 		ret_val = EOB_ACT_CONTINUE_SCAN;
 
-	if ((yy_size_t) ((yy_n_chars) + number_to_move) > YY_CURRENT_BUFFER_LVALUE->yy_buf_size) {
+	if (((yy_n_chars) + number_to_move) > YY_CURRENT_BUFFER_LVALUE->yy_buf_size) {
 		/* Extend the array by 50%, plus the number we really need. */
-		yy_size_t new_size = (yy_n_chars) + number_to_move + ((yy_n_chars) >> 1);
-		YY_CURRENT_BUFFER_LVALUE->yy_ch_buf = (char *) yyrealloc((void *) YY_CURRENT_BUFFER_LVALUE->yy_ch_buf,new_size  );
+		int new_size = (yy_n_chars) + number_to_move + ((yy_n_chars) >> 1);
+		YY_CURRENT_BUFFER_LVALUE->yy_ch_buf = (char *) yyrealloc(
+			(void *) YY_CURRENT_BUFFER_LVALUE->yy_ch_buf, (yy_size_t) new_size  );
 		if ( ! YY_CURRENT_BUFFER_LVALUE->yy_ch_buf )
 			YY_FATAL_ERROR( "out of dynamic memory in yy_get_next_buffer()" );
+		/* "- 2" to take care of EOB's */
+		YY_CURRENT_BUFFER_LVALUE->yy_buf_size = (int) (new_size - 2);
 	}
 
 	(yy_n_chars) += number_to_move;
@@ -3761,8 +3751,8 @@ static int yy_get_next_buffer (void)
 
     static yy_state_type yy_get_previous_state (void)
 {
-	register yy_state_type yy_current_state;
-	register char *yy_cp;
+	yy_state_type yy_current_state;
+	char *yy_cp;
     
 	yy_current_state = (yy_start);
 
@@ -3771,14 +3761,14 @@ static int yy_get_next_buffer (void)
 
 	for ( yy_cp = (yytext_ptr) + YY_MORE_ADJ; yy_cp < (yy_c_buf_p); ++yy_cp )
 		{
-		register YY_CHAR yy_c = (*yy_cp ? yy_ec[YY_SC_TO_UI(*yy_cp)] : 1);
+		YY_CHAR yy_c = (*yy_cp ? yy_ec[YY_SC_TO_UI(*yy_cp)] : 1);
 		while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 			{
 			yy_current_state = (int) yy_def[yy_current_state];
 			if ( yy_current_state >= 797 )
-				yy_c = yy_meta[(unsigned int) yy_c];
+				yy_c = yy_meta[yy_c];
 			}
-		yy_current_state = yy_nxt[yy_base[yy_current_state] + (unsigned int) yy_c];
+		yy_current_state = yy_nxt[yy_base[yy_current_state] + yy_c];
 		*(yy_state_ptr)++ = yy_current_state;
 		}
 
@@ -3792,22 +3782,26 @@ static int yy_get_next_buffer (void)
  */
     static yy_state_type yy_try_NUL_trans  (yy_state_type yy_current_state )
 {
-	register int yy_is_jam;
+	int yy_is_jam;
     
-	register YY_CHAR yy_c = 1;
+	YY_CHAR yy_c = 1;
 	while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 		{
 		yy_current_state = (int) yy_def[yy_current_state];
 		if ( yy_current_state >= 797 )
-			yy_c = yy_meta[(unsigned int) yy_c];
+			yy_c = yy_meta[yy_c];
 		}
-	yy_current_state = yy_nxt[yy_base[yy_current_state] + (unsigned int) yy_c];
+	yy_current_state = yy_nxt[yy_base[yy_current_state] + yy_c];
 	yy_is_jam = (yy_current_state == 796);
 	if ( ! yy_is_jam )
 		*(yy_state_ptr)++ = yy_current_state;
 
 		return yy_is_jam ? 0 : yy_current_state;
 }
+
+#ifndef YY_NO_UNPUT
+
+#endif
 
 #ifndef YY_NO_INPUT
 #ifdef __cplusplus
@@ -3833,7 +3827,7 @@ static int yy_get_next_buffer (void)
 
 		else
 			{ /* need more input */
-			yy_size_t offset = (yy_c_buf_p) - (yytext_ptr);
+			int offset = (int) ((yy_c_buf_p) - (yytext_ptr));
 			++(yy_c_buf_p);
 
 			switch ( yy_get_next_buffer(  ) )
@@ -3850,14 +3844,14 @@ static int yy_get_next_buffer (void)
 					 */
 
 					/* Reset buffer status. */
-					yyrestart(yyin );
+					yyrestart( yyin );
 
 					/*FALLTHROUGH*/
 
 				case EOB_ACT_END_OF_FILE:
 					{
-					if ( yywrap( ) )
-						return EOF;
+					if ( yywrap(  ) )
+						return 0;
 
 					if ( ! (yy_did_buffer_switch_on_eof) )
 						YY_NEW_FILE;
@@ -3894,11 +3888,11 @@ static int yy_get_next_buffer (void)
 	if ( ! YY_CURRENT_BUFFER ){
         yyensure_buffer_stack ();
 		YY_CURRENT_BUFFER_LVALUE =
-            yy_create_buffer(yyin,YY_BUF_SIZE );
+            yy_create_buffer( yyin, YY_BUF_SIZE );
 	}
 
-	yy_init_buffer(YY_CURRENT_BUFFER,input_file );
-	yy_load_buffer_state( );
+	yy_init_buffer( YY_CURRENT_BUFFER, input_file );
+	yy_load_buffer_state(  );
 }
 
 /** Switch to a different input buffer.
@@ -3926,7 +3920,7 @@ static int yy_get_next_buffer (void)
 		}
 
 	YY_CURRENT_BUFFER_LVALUE = new_buffer;
-	yy_load_buffer_state( );
+	yy_load_buffer_state(  );
 
 	/* We don't actually know whether we did this switch during
 	 * EOF (yywrap()) processing, but the only time this flag
@@ -3954,7 +3948,7 @@ static void yy_load_buffer_state  (void)
 {
 	YY_BUFFER_STATE b;
     
-	b = (YY_BUFFER_STATE) yyalloc(sizeof( struct yy_buffer_state )  );
+	b = (YY_BUFFER_STATE) yyalloc( sizeof( struct yy_buffer_state )  );
 	if ( ! b )
 		YY_FATAL_ERROR( "out of dynamic memory in yy_create_buffer()" );
 
@@ -3963,13 +3957,13 @@ static void yy_load_buffer_state  (void)
 	/* yy_ch_buf has to be 2 characters longer than the size given because
 	 * we need to put in 2 end-of-buffer characters.
 	 */
-	b->yy_ch_buf = (char *) yyalloc(b->yy_buf_size + 2  );
+	b->yy_ch_buf = (char *) yyalloc( (yy_size_t) (b->yy_buf_size + 2)  );
 	if ( ! b->yy_ch_buf )
 		YY_FATAL_ERROR( "out of dynamic memory in yy_create_buffer()" );
 
 	b->yy_is_our_buffer = 1;
 
-	yy_init_buffer(b,file );
+	yy_init_buffer( b, file );
 
 	return b;
 }
@@ -3988,9 +3982,9 @@ static void yy_load_buffer_state  (void)
 		YY_CURRENT_BUFFER_LVALUE = (YY_BUFFER_STATE) 0;
 
 	if ( b->yy_is_our_buffer )
-		yyfree((void *) b->yy_ch_buf  );
+		yyfree( (void *) b->yy_ch_buf  );
 
-	yyfree((void *) b  );
+	yyfree( (void *) b  );
 }
 
 /* Initializes or reinitializes a buffer.
@@ -4002,7 +3996,7 @@ static void yy_load_buffer_state  (void)
 {
 	int oerrno = errno;
     
-	yy_flush_buffer(b );
+	yy_flush_buffer( b );
 
 	b->yy_input_file = file;
 	b->yy_fill_buffer = 1;
@@ -4045,7 +4039,7 @@ static void yy_load_buffer_state  (void)
 	b->yy_buffer_status = YY_BUFFER_NEW;
 
 	if ( b == YY_CURRENT_BUFFER )
-		yy_load_buffer_state( );
+		yy_load_buffer_state(  );
 }
 
 /** Pushes the new state onto the stack. The new state becomes
@@ -4076,7 +4070,7 @@ void yypush_buffer_state (YY_BUFFER_STATE new_buffer )
 	YY_CURRENT_BUFFER_LVALUE = new_buffer;
 
 	/* copied from yy_switch_to_buffer. */
-	yy_load_buffer_state( );
+	yy_load_buffer_state(  );
 	(yy_did_buffer_switch_on_eof) = 1;
 }
 
@@ -4095,7 +4089,7 @@ void yypop_buffer_state (void)
 		--(yy_buffer_stack_top);
 
 	if (YY_CURRENT_BUFFER) {
-		yy_load_buffer_state( );
+		yy_load_buffer_state(  );
 		(yy_did_buffer_switch_on_eof) = 1;
 	}
 }
@@ -4113,15 +4107,15 @@ static void yyensure_buffer_stack (void)
 		 * scanner will even need a stack. We use 2 instead of 1 to avoid an
 		 * immediate realloc on the next call.
          */
-		num_to_alloc = 1;
+      num_to_alloc = 1; /* After all that talk, this was set to 1 anyways... */
 		(yy_buffer_stack) = (struct yy_buffer_state**)yyalloc
 								(num_to_alloc * sizeof(struct yy_buffer_state*)
 								);
 		if ( ! (yy_buffer_stack) )
 			YY_FATAL_ERROR( "out of dynamic memory in yyensure_buffer_stack()" );
-								  
+
 		memset((yy_buffer_stack), 0, num_to_alloc * sizeof(struct yy_buffer_state*));
-				
+
 		(yy_buffer_stack_max) = num_to_alloc;
 		(yy_buffer_stack_top) = 0;
 		return;
@@ -4130,7 +4124,7 @@ static void yyensure_buffer_stack (void)
 	if ((yy_buffer_stack_top) >= ((yy_buffer_stack_max)) - 1){
 
 		/* Increase the buffer to prepare for a possible push. */
-		int grow_size = 8 /* arbitrary grow size */;
+		yy_size_t grow_size = 8 /* arbitrary grow size */;
 
 		num_to_alloc = (yy_buffer_stack_max) + grow_size;
 		(yy_buffer_stack) = (struct yy_buffer_state**)yyrealloc
@@ -4150,7 +4144,7 @@ static void yyensure_buffer_stack (void)
  * @param base the character buffer
  * @param size the size in bytes of the character buffer
  * 
- * @return the newly allocated buffer state object. 
+ * @return the newly allocated buffer state object.
  */
 YY_BUFFER_STATE yy_scan_buffer  (char * base, yy_size_t  size )
 {
@@ -4160,23 +4154,23 @@ YY_BUFFER_STATE yy_scan_buffer  (char * base, yy_size_t  size )
 	     base[size-2] != YY_END_OF_BUFFER_CHAR ||
 	     base[size-1] != YY_END_OF_BUFFER_CHAR )
 		/* They forgot to leave room for the EOB's. */
-		return 0;
+		return NULL;
 
-	b = (YY_BUFFER_STATE) yyalloc(sizeof( struct yy_buffer_state )  );
+	b = (YY_BUFFER_STATE) yyalloc( sizeof( struct yy_buffer_state )  );
 	if ( ! b )
 		YY_FATAL_ERROR( "out of dynamic memory in yy_scan_buffer()" );
 
-	b->yy_buf_size = size - 2;	/* "- 2" to take care of EOB's */
+	b->yy_buf_size = (int) (size - 2);	/* "- 2" to take care of EOB's */
 	b->yy_buf_pos = b->yy_ch_buf = base;
 	b->yy_is_our_buffer = 0;
-	b->yy_input_file = 0;
+	b->yy_input_file = NULL;
 	b->yy_n_chars = b->yy_buf_size;
 	b->yy_is_interactive = 0;
 	b->yy_at_bol = 1;
 	b->yy_fill_buffer = 0;
 	b->yy_buffer_status = YY_BUFFER_NEW;
 
-	yy_switch_to_buffer(b  );
+	yy_switch_to_buffer( b  );
 
 	return b;
 }
@@ -4189,10 +4183,10 @@ YY_BUFFER_STATE yy_scan_buffer  (char * base, yy_size_t  size )
  * @note If you want to scan bytes that may contain NUL values, then use
  *       yy_scan_bytes() instead.
  */
-YY_BUFFER_STATE yy_scan_string (yyconst char * yystr )
+YY_BUFFER_STATE yy_scan_string (const char * yystr )
 {
     
-	return yy_scan_bytes(yystr,strlen(yystr) );
+	return yy_scan_bytes( yystr, (int) strlen(yystr) );
 }
 
 /** Setup the input buffer state to scan the given bytes. The next call to yylex() will
@@ -4202,16 +4196,16 @@ YY_BUFFER_STATE yy_scan_string (yyconst char * yystr )
  * 
  * @return the newly allocated buffer state object.
  */
-YY_BUFFER_STATE yy_scan_bytes  (yyconst char * yybytes, yy_size_t  _yybytes_len )
+YY_BUFFER_STATE yy_scan_bytes  (const char * yybytes, int  _yybytes_len )
 {
 	YY_BUFFER_STATE b;
 	char *buf;
 	yy_size_t n;
-	yy_size_t i;
+	int i;
     
 	/* Get memory for full buffer, including space for trailing EOB's. */
-	n = _yybytes_len + 2;
-	buf = (char *) yyalloc(n  );
+	n = (yy_size_t) (_yybytes_len + 2);
+	buf = (char *) yyalloc( n  );
 	if ( ! buf )
 		YY_FATAL_ERROR( "out of dynamic memory in yy_scan_bytes()" );
 
@@ -4220,7 +4214,7 @@ YY_BUFFER_STATE yy_scan_bytes  (yyconst char * yybytes, yy_size_t  _yybytes_len 
 
 	buf[_yybytes_len] = buf[_yybytes_len+1] = YY_END_OF_BUFFER_CHAR;
 
-	b = yy_scan_buffer(buf,n );
+	b = yy_scan_buffer( buf, n );
 	if ( ! b )
 		YY_FATAL_ERROR( "bad buffer in yy_scan_bytes()" );
 
@@ -4236,9 +4230,9 @@ YY_BUFFER_STATE yy_scan_bytes  (yyconst char * yybytes, yy_size_t  _yybytes_len 
 #define YY_EXIT_FAILURE 2
 #endif
 
-static void yy_fatal_error (yyconst char* msg )
+static void yynoreturn yy_fatal_error (const char* msg )
 {
-    	(void) fprintf( stderr, "%s\n", msg );
+			fprintf( stderr, "%s\n", msg );
 	exit( YY_EXIT_FAILURE );
 }
 
@@ -4266,7 +4260,7 @@ static void yy_fatal_error (yyconst char* msg )
  */
 int yyget_lineno  (void)
 {
-        
+    
     return yylineno;
 }
 
@@ -4289,7 +4283,7 @@ FILE *yyget_out  (void)
 /** Get the length of the current token.
  * 
  */
-yy_size_t yyget_leng  (void)
+int yyget_leng  (void)
 {
         return yyleng;
 }
@@ -4304,29 +4298,29 @@ char *yyget_text  (void)
 }
 
 /** Set the current line number.
- * @param line_number
+ * @param _line_number line number
  * 
  */
-void yyset_lineno (int  line_number )
+void yyset_lineno (int  _line_number )
 {
     
-    yylineno = line_number;
+    yylineno = _line_number;
 }
 
 /** Set the input stream. This does not discard the current
  * input buffer.
- * @param in_str A readable stream.
+ * @param _in_str A readable stream.
  * 
  * @see yy_switch_to_buffer
  */
-void yyset_in (FILE *  in_str )
+void yyset_in (FILE *  _in_str )
 {
-        yyin = in_str ;
+        yyin = _in_str ;
 }
 
-void yyset_out (FILE *  out_str )
+void yyset_out (FILE *  _out_str )
 {
-        yyout = out_str ;
+        yyout = _out_str ;
 }
 
 int yyget_debug  (void)
@@ -4334,9 +4328,9 @@ int yyget_debug  (void)
         return yy_flex_debug;
 }
 
-void yyset_debug (int  bdebug )
+void yyset_debug (int  _bdebug )
 {
-        yy_flex_debug = bdebug ;
+        yy_flex_debug = _bdebug ;
 }
 
 static int yy_init_globals (void)
@@ -4345,10 +4339,10 @@ static int yy_init_globals (void)
      * This function is called from yylex_destroy(), so don't allocate here.
      */
 
-    (yy_buffer_stack) = 0;
+    (yy_buffer_stack) = NULL;
     (yy_buffer_stack_top) = 0;
     (yy_buffer_stack_max) = 0;
-    (yy_c_buf_p) = (char *) 0;
+    (yy_c_buf_p) = NULL;
     (yy_init) = 0;
     (yy_start) = 0;
 
@@ -4362,8 +4356,8 @@ static int yy_init_globals (void)
     yyin = stdin;
     yyout = stdout;
 #else
-    yyin = (FILE *) 0;
-    yyout = (FILE *) 0;
+    yyin = NULL;
+    yyout = NULL;
 #endif
 
     /* For future reference: Set errno on error, since we are called by
@@ -4378,7 +4372,7 @@ int yylex_destroy  (void)
     
     /* Pop the buffer stack, destroying each element. */
 	while(YY_CURRENT_BUFFER){
-		yy_delete_buffer(YY_CURRENT_BUFFER  );
+		yy_delete_buffer( YY_CURRENT_BUFFER  );
 		YY_CURRENT_BUFFER_LVALUE = NULL;
 		yypop_buffer_state();
 	}
@@ -4402,18 +4396,19 @@ int yylex_destroy  (void)
  */
 
 #ifndef yytext_ptr
-static void yy_flex_strncpy (char* s1, yyconst char * s2, int n )
+static void yy_flex_strncpy (char* s1, const char * s2, int n )
 {
-	register int i;
+		
+	int i;
 	for ( i = 0; i < n; ++i )
 		s1[i] = s2[i];
 }
 #endif
 
 #ifdef YY_NEED_STRLEN
-static int yy_flex_strlen (yyconst char * s )
+static int yy_flex_strlen (const char * s )
 {
-	register int n;
+	int n;
 	for ( n = 0; s[n]; ++n )
 		;
 
@@ -4423,11 +4418,12 @@ static int yy_flex_strlen (yyconst char * s )
 
 void *yyalloc (yy_size_t  size )
 {
-	return (void *) malloc( size );
+			return malloc(size);
 }
 
 void *yyrealloc  (void * ptr, yy_size_t  size )
 {
+		
 	/* The cast to (char *) in the following accommodates both
 	 * implementations that use char* generic pointers, and those
 	 * that use void* generic pointers.  It works with the latter
@@ -4435,18 +4431,17 @@ void *yyrealloc  (void * ptr, yy_size_t  size )
 	 * any pointer type to void*, and deal with argument conversions
 	 * as though doing an assignment.
 	 */
-	return (void *) realloc( (char *) ptr, size );
+	return realloc(ptr, size);
 }
 
 void yyfree (void * ptr )
 {
-	free( (char *) ptr );	/* see yyrealloc() for (char *) cast */
+			free( (char *) ptr );	/* see yyrealloc() for (char *) cast */
 }
 
 #define YYTABLES_NAME "yytables"
 
-#line 561 "../../../vice/src/monitor/mon_lex.l"
-
+#line 563 "vice/src/monitor/mon_lex.l"
 
 
 void free_buffer(void)
@@ -4456,7 +4451,7 @@ void free_buffer(void)
 
 void make_buffer(char *str)
 {
-    my_state = yy_scan_buffer(str,strlen(str) + 2);
+    my_state = yy_scan_buffer(str, strlen(str) + 2);
     assert(my_state);
 }
 

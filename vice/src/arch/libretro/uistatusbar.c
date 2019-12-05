@@ -39,7 +39,10 @@
 #include "uistatusbar.h"
 #include "videoarch.h"
 
+#include "libretro.h"
 #include "libretro-core.h"
+
+extern retro_environment_t environ_cb;
 
 #include "joystick.h"
 
@@ -87,6 +90,20 @@ static void display_tape(void)
     if (uistatusbar_state & UISTATUSBAR_ACTIVE) {
         uistatusbar_state |= UISTATUSBAR_REPAINT;
     }
+
+	// Tell front-end
+	if ( environ_cb )
+	{
+		if ( tape_enabled )
+		{
+			environ_cb( RETRO_ENVIRONMENT_SET_TAPE_COUNTER, &tape_counter );
+		}
+		else
+		{
+			int hide = -1;
+			environ_cb( RETRO_ENVIRONMENT_SET_TAPE_COUNTER, &hide );
+		}
+	}
 }
 
 static int per = 0;
@@ -350,7 +367,6 @@ void uistatusbar_close(void)
 }
 
 #include "keyboard.h"
-extern unsigned int cur_port;
 
 
 #include "RSDL_wrapper.h"
@@ -393,9 +409,6 @@ unsigned int color_f, color_b;
     fake.clip_rect.w=retrow;
     fake.clip_rect.x=0;
     fake.clip_rect.y=0;
-
-    sprintf(tmpstr,"joy%d:%d",cur_port,joystick_value[cur_port]);
-    Retro_Draw_string(&fake, 200, 0, tmpstr,8,1,1, color_f, color_b);
 
     for (i = 0; i < MAX_STATUSBAR_LEN; ++i) {
         c = statusbar_text[i];

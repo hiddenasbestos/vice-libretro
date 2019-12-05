@@ -8,6 +8,8 @@ char slash = '\\';
 char slash = '/';
 #endif
 
+static int is_pal_system = 1;
+
 bool retro_load_ok = false;
 
 retro_log_printf_t log_cb;
@@ -17,10 +19,6 @@ char RETRO_DIR[512];
 char DISKA_NAME[512]="\0";
 char DISKB_NAME[512]="\0";
 char TAPE_NAME[512]="\0";
-
-int mapper_keys[16]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-char keys[4096];
-char buf[10][4096];
 
 // Our virtual time counter, increased by retro_run()
 long microSecCounter=0;
@@ -49,12 +47,8 @@ char RPATH[512];
 int pauseg=0; //emu status run/pause/end
 int want_quit=0;
 
-extern int MOUSE_EMULATED;
-extern int SHOWKEY;
-
 extern int app_init(void);
 extern int app_free(void);
-extern int app_render(int poll);
 
 int CROP_WIDTH;
 int CROP_HEIGHT;
@@ -69,13 +63,8 @@ int retroh=768;
 int lastW=1024;
 int lastH=768;
 
-#include "vkbd.i"
-
-unsigned vice_devices[ 2 ];
-
 extern int RETROJOY,RETROTDE,RETROSTATUS,RETRODRVTYPE,RETROSIDMODL,RETROC64MODL,RETROUSERPORTJOY;
 extern int retrojoy_init,retro_ui_finalized;
-extern unsigned int cur_port;
 extern void set_drive_type(int drive,int val);
 extern void set_truedrive_emulation(int val);
 extern void reset_mouse_pos();
@@ -109,7 +98,7 @@ char retro_system_data_directory[512];;
 static retro_video_refresh_t video_cb;
 static retro_audio_sample_t audio_cb;
 static retro_audio_sample_batch_t audio_batch_cb;
-static retro_environment_t environ_cb;
+retro_environment_t environ_cb;
 
 void retro_set_input_state(retro_input_state_t cb)
 {
@@ -346,40 +335,66 @@ void Screen_SetFullUpdate(int scr)
       memset(&bmp,0,sizeof(bmp));
 }
 
-int keyId(const char *val)
-{
-   int i=0;
-   while (keyDesc[i]!=NULL)
-   {
-      if (!strcmp(keyDesc[i],val))
-         return keyVal[i];
-      i++;
-   }
-   return 0;
-}
-
 void retro_set_environment(retro_environment_t cb)
 {
-   static const struct retro_controller_description p1_controllers[] = {
-      { "Vice Joystick", RETRO_DEVICE_VICE_JOYSTICK },
-      { "Vice Keyboard", RETRO_DEVICE_VICE_KEYBOARD },
+   static const struct retro_controller_description p1_controllers[] = 
+   {
+      { "Joystick", RETRO_DEVICE_JOYPAD },
    };
-   static const struct retro_controller_description p2_controllers[] = {
-      { "Vice Joystick", RETRO_DEVICE_VICE_JOYSTICK },
-      { "Vice Keyboard", RETRO_DEVICE_VICE_KEYBOARD },
+   static const struct retro_controller_description p2_controllers[] =
+   {
+      { "Joystick", RETRO_DEVICE_JOYPAD },
    };
 
-   static const struct retro_controller_info ports[] = {
-      { p1_controllers, 2  }, // port 1
-      { p2_controllers, 2  }, // port 2
+   static const struct retro_controller_info ports[] =
+   {
+      { p1_controllers, 1  }, // port 1
+      { p2_controllers, 1  }, // port 2
       { NULL, 0 }
    };
 
    struct retro_variable variables[] =
    {
+ 
+ #ifdef __VIC20__
+      
+	  {
+         "vice_VIC20Model",
+         "VIC20Model; VIC20MODEL_VIC20_PAL|VIC20MODEL_VIC20_NTSC|VIC20MODEL_VIC21|VIC20MODEL_UNKNOWN",
+      },
+
+#elif __PLUS4__
+      
+	  {
+         "vice_PLUS4Video",
+         "Video Standard; PAL|NTSC",
+      },
+	  {
+         "vice_PLUS4Model",
+         "System; PLUS/4|Commodore 16",
+      },
+
+#elif __X128__
+      
+	  {
+         "vice_SidModel",
+         "SidModel; 6581F|8580F|6581R|8580R|8580RD",
+      },
+      
+	  {
+         "vice_C128Model",
+         "C128Model; C128MODEL_C128_PAL|C128MODEL_C128DCR_PAL|C128MODEL_C128_NTSC|C128MODEL_C128DCR_NTSC|C128MODEL_UNKNOWN",
+      },
+
+#elif __X64__
+
       {
-         "vice_Statusbar",
-         "Status Bar; disabled|enabled",
+         "vice_C64Model",
+         "C64Model; C64MODEL_C64_PAL|C64MODEL_C64C_PAL|C64MODEL_C64_OLD_PAL|C64MODEL_C64_NTSC|C64MODEL_C64C_NTSC|C64MODEL_C64_OLD_NTSC|C64MODEL_C64_PAL_N|C64MODEL_C64SX_PAL|C64MODEL_C64SX_NTSC|C64MODEL_C64_JAP|C64MODEL_C64_GS|C64MODEL_PET64_PAL|C64MODEL_PET64_NTSC|C64MODEL_ULTIMAX|C64MODEL_UNKNOWN",
+      },
+      {
+         "vice_SidModel",
+         "SidModel; 6581F|8580F|6581R|8580R|8580RD",
       },
       {
          "vice_Drive8Type",
@@ -389,58 +404,8 @@ void retro_set_environment(retro_environment_t cb)
          "vice_DriveTrueEmulation",
          "DriveTrueEmulation; enabled|disabled",
       },
-      {
-         "vice_SidModel",
-         "SidModel; 6581F|8580F|6581R|8580R|8580RD",
-      },
-#if  defined(__VIC20__)
-      {
-         "vice_VIC20Model",
-         "VIC20Model; VIC20MODEL_VIC20_PAL|VIC20MODEL_VIC20_NTSC|VIC20MODEL_VIC21|VIC20MODEL_UNKNOWN",
-      },
-#elif  defined(__PLUS4__)
-      {
-         "vice_PLUS4Model",
-         "PLUS4Model; PLUS4MODEL_C16_PAL|PLUS4MODEL_C16_NTSC|PLUS4MODEL_PLUS4_PAL|PLUS4MODEL_PLUS4_NTSC|PLUS4MODEL_V364_NTSC|PLUS4MODEL_232_NTSC|PLUS4MODEL_UNKNOWN",
-      },
-#elif  defined(__X128__)
-      {
-         "vice_C128Model",
-         "C128Model; C128MODEL_C128_PAL|C128MODEL_C128DCR_PAL|C128MODEL_C128_NTSC|C128MODEL_C128DCR_NTSC|C128MODEL_UNKNOWN",
-      },
-#else
-      {
-         "vice_C64Model",
-         "C64Model; C64MODEL_C64_PAL|C64MODEL_C64C_PAL|C64MODEL_C64_OLD_PAL|C64MODEL_C64_NTSC|C64MODEL_C64C_NTSC|C64MODEL_C64_OLD_NTSC|C64MODEL_C64_PAL_N|C64MODEL_C64SX_PAL|C64MODEL_C64SX_NTSC|C64MODEL_C64_JAP|C64MODEL_C64_GS|C64MODEL_PET64_PAL|C64MODEL_PET64_NTSC|C64MODEL_ULTIMAX|C64MODEL_UNKNOWN",
-      },
-#endif
-      {
-         "vice_UserportJoyType",
-         "4-player adapter; none|Protovision_CGA|PET|Hummer|OEM|Hit|Kingsoft|Starbyte",
-      },
-      {
-         "vice_JoyPort",
-         "Controller0 port; port_2|port_1",
-      },
-      {
-         "vice_RetroJoy",
-         "Retro joy0; enabled|disabled",
-      },
-      {
-         "vice_Controller",
-         "Controller0 type; keyboard|joystick",
-      },
 
-      { "vice_mapper_y", buf[0] },
-      { "vice_mapper_x", buf[1] },
-      { "vice_mapper_b", buf[2] },
-      { "vice_mapper_l", buf[3] },
-      { "vice_mapper_r", buf[4] },
-      { "vice_mapper_l2", buf[5] },
-      { "vice_mapper_r2", buf[6] },
-      { "vice_mapper_l3", buf[7] },
-      { "vice_mapper_r3", buf[8] },
-      { "vice_mapper_start", buf[9] },
+#endif
 
       { NULL, NULL },
    };
@@ -452,29 +417,6 @@ void retro_set_environment(retro_environment_t cb)
 
    cb( RETRO_ENVIRONMENT_SET_CONTROLLER_INFO, (void*)ports );
 
-   i=0;
-   while (keyDesc[i]!=NULL)
-   {
-      if (i == 0)
-         strcpy (keys, keyDesc[i]);
-      else
-         strcat (keys, keyDesc[i]);
-      if (keyDesc[i+1]!=NULL)
-         strcat (keys, "|");
-      i++;
-   }
-
-   snprintf(buf[0],sizeof(buf[0]), "RetroPad Y; %s|%s","RETROK_F9",     keys);
-   snprintf(buf[1],sizeof(buf[1]), "RetroPad X; %s|%s","RETROK_RETURN",     keys);
-   snprintf(buf[2],sizeof(buf[2]), "RetroPad B; %s|%s","RETROK_ESCAPE",     keys);
-   snprintf(buf[3],sizeof(buf[3]), "RetroPad L; %s|%s","RETROK_KP_PLUS",     keys);
-   snprintf(buf[4],sizeof(buf[4]), "RetroPad R; %s|%s","RETROK_KP_MINUS",     keys);
-   snprintf(buf[5],sizeof(buf[5]), "RetroPad L2; %s|%s","RETROK_KP_MULTIPLY",    keys);
-   snprintf(buf[6],sizeof(buf[6]), "RetroPad R2; %s|%s","RETROK_ESCAPE",   keys);
-   snprintf(buf[7],sizeof(buf[7]), "RetroPad L3; %s|%s","RETROK_TAB",   keys);
-   snprintf(buf[8],sizeof(buf[8]), "RetroPad R3; %s|%s","RETROK_F5",  keys);
-   snprintf(buf[9],sizeof(buf[9]),"RetroPad START; %s|%s","RETROK_KP_DIVIDE", keys);
-
    cb(RETRO_ENVIRONMENT_SET_VARIABLES, variables);
 
    allowNoGameMode = true;
@@ -483,25 +425,82 @@ void retro_set_environment(retro_environment_t cb)
 
 static void update_variables(void)
 {
+	struct retro_variable var;
 
-   struct retro_variable var;
+	if ( retro_ui_finalized )
+	{
+		vice_statusbar = 0;
+	}
+	else
+	{
+		RETROSTATUS = 0;
+	}
 
-   var.key = "vice_Statusbar";
-   var.value = NULL;
+#ifdef __PLUS4__
 
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
-      if(retro_ui_finalized){
-         if (strcmp(var.value, "enabled") == 0)
-            vice_statusbar=1;
-         if (strcmp(var.value, "disabled") == 0)
-            vice_statusbar=0;
-      }
-      else {
-         if (strcmp(var.value, "enabled") == 0)RETROSTATUS=1;
-         if (strcmp(var.value, "disabled") == 0)RETROSTATUS=0;
-      }
-   }
+	var.key = "vice_PLUS4Video";
+	var.value = NULL;
+
+	if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+	{
+		is_pal_system = 1;
+		if (strcmp(var.value, "NTSC") == 0)
+			is_pal_system = 0;
+	}
+		
+	var.key = "vice_PLUS4Model";
+	var.value = NULL;
+		
+	if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+	{
+		int modl = is_pal_system ? PLUS4MODEL_PLUS4_PAL : PLUS4MODEL_PLUS4_NTSC;
+
+		if (strcmp(var.value, "Commodore 16") == 0)
+		{
+			modl = is_pal_system ? PLUS4MODEL_C16_PAL : PLUS4MODEL_C16_NTSC;
+		}
+
+		if ( retro_ui_finalized )
+		{
+			plus4model_set( modl );
+		}
+		else 
+		{
+			RETROC64MODL = modl;
+		}
+	}
+
+	if( retro_ui_finalized )
+	{
+		resources_set_int("UserportJoy", 0);
+	}
+	else
+	{
+		RETROUSERPORTJOY=-1;
+	}
+
+	if ( retrojoy_init )
+	{
+		resources_set_int( "RetroJoy", 1 );
+	}
+	else
+	{
+		RETROJOY=1;
+	}
+
+	if ( retro_ui_finalized )
+	{
+		set_drive_type( 8, 1541 ); // 1551 also supported.
+		set_truedrive_emulation( 1 );
+		resources_set_int("VirtualDevices", 0);
+	}
+	else
+	{
+		RETRODRVTYPE = 1541; // 1551 also supported.
+		RETROTDE = 1;
+	}
+   
+#else // __PLUS4__
 
    var.key = "vice_Drive8Type";
    var.value = NULL;
@@ -526,12 +525,12 @@ static void update_variables(void)
       if(retro_ui_finalized){
          if (strcmp(var.value, "enabled") == 0){
             set_truedrive_emulation(1);
-	    resources_set_int("VirtualDevices", 0);
+        resources_set_int("VirtualDevices", 0);
          }
          if (strcmp(var.value, "disabled") == 0){
             set_truedrive_emulation(0);
             resources_set_int("VirtualDevices", 1);
-	 }
+     }
       }
       else  {
          if (strcmp(var.value, "enabled") == 0)RETROTDE=1;
@@ -559,6 +558,8 @@ static void update_variables(void)
       else RETROSIDMODL=sidmdl;
    }
 
+#endif // __PLUS4__
+
 #if  defined(__VIC20__)
    var.key = "vice_VIC20Model";
    var.value = NULL;
@@ -576,26 +577,7 @@ static void update_variables(void)
         vic20model_set(modl);
       else RETROC64MODL=modl;
    }
-#elif  defined(__PLUS4__)
-   var.key = "vice_PLUS4Model";
-   var.value = NULL;
 
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
-      int modl=0;
-
-      if (strcmp(var.value, "PLUS4MODEL_C16_PAL") == 0)modl=PLUS4MODEL_C16_PAL;
-      else if (strcmp(var.value, "PLUS4MODEL_C16_NTSC") == 0)modl=PLUS4MODEL_C16_NTSC;
-      else if (strcmp(var.value, "PLUS4MODEL_PLUS4_PAL") == 0)modl=PLUS4MODEL_PLUS4_PAL;
-      else if (strcmp(var.value, "PLUS4MODEL_PLUS4_NTSC") == 0)modl=PLUS4MODEL_PLUS4_NTSC;
-      else if (strcmp(var.value, "PLUS4MODEL_V364_NTSC") == 0)modl=PLUS4MODEL_V364_NTSC;
-      else if (strcmp(var.value, "PLUS4MODEL_232_NTSC") == 0)modl=PLUS4MODEL_232_NTSC;
-      else if (strcmp(var.value, "PLUS4MODEL_UNKNOWN") == 0)modl=PLUS4MODEL_UNKNOWN;
-
-      if(retro_ui_finalized)
-        plus4model_set(modl);
-      else RETROC64MODL=modl;
-   }
 #elif  defined(__X128__)
    var.key = "vice_C128Model";
    var.value = NULL;
@@ -613,7 +595,8 @@ static void update_variables(void)
         c128model_set(modl);
       else RETROC64MODL=modl;
    }
-#else
+
+#elif __X64__
 
    var.key = "vice_C64Model";
    var.value = NULL;
@@ -643,159 +626,13 @@ static void update_variables(void)
       else RETROC64MODL=modl;
 
    }
+
 #endif
-
-   var.key = "vice_UserportJoyType";
-   var.value = NULL;
-
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
-
-      int joyadaptertype=-1;
-      if (strcmp(var.value, "none") == 0)joyadaptertype=-1;
-      else if (strcmp(var.value, "Protovision_CGA") == 0)joyadaptertype=USERPORT_JOYSTICK_CGA;
-      else if (strcmp(var.value, "PET") == 0)joyadaptertype=USERPORT_JOYSTICK_PET;
-      else if (strcmp(var.value, "Hummer") == 0)joyadaptertype=USERPORT_JOYSTICK_HUMMER;
-      else if (strcmp(var.value, "OEM") == 0)joyadaptertype=USERPORT_JOYSTICK_OEM;
-      else if (strcmp(var.value, "Hit") == 0)joyadaptertype=USERPORT_JOYSTICK_HIT;
-      else if (strcmp(var.value, "Kingsoft") == 0)joyadaptertype=USERPORT_JOYSTICK_KINGSOFT;
-      else if (strcmp(var.value, "Starbyte") == 0)joyadaptertype=USERPORT_JOYSTICK_STARBYTE;
-
-      if(retro_ui_finalized){
-           if(joyadaptertype==-1)resources_set_int("UserportJoy", 0);
-           else {
-             resources_set_int("UserportJoy", 1);
-             resources_set_int("UserportJoyType", joyadaptertype);
-           }
-      } else {
-        RETROUSERPORTJOY=joyadaptertype;
-      }
-   }
-
-   var.key = "vice_JoyPort";
-   var.value = NULL;
-
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
-      if (strcmp(var.value, "port_2") == 0)cur_port=2;
-      else if (strcmp(var.value, "port_1") == 0)cur_port=1;
-   }
-
-   var.key = "vice_RetroJoy";
-   var.value = NULL;
-
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
-      if(retrojoy_init){
-         if (strcmp(var.value, "enabled") == 0)
-            resources_set_int( "RetroJoy", 1);
-         if (strcmp(var.value, "disabled") == 0)
-            resources_set_int( "RetroJoy", 0);
-      }
-      else {
-         if (strcmp(var.value, "enabled") == 0)RETROJOY=1;
-         if (strcmp(var.value, "disabled") == 0)RETROJOY=0;
-      }
-   }
-
-   var.key = "vice_Controller";
-   var.value = NULL;
-
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
-      if (strcmp(var.value, "keyboard") == 0)
-         vice_devices[ 0 ] = 259;
-      if (strcmp(var.value, "joystick") == 0)
-         vice_devices[ 0 ] = 513;
-   }
-
-   var.key = "vice_mapper_y";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
-
-      mapper_keys[1] = keyId(var.value);
-   }
-
-   var.key = "vice_mapper_x";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
-
-      mapper_keys[9] = keyId(var.value);
-   }
-
-   var.key = "vice_mapper_b";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
-
-      mapper_keys[0] = keyId(var.value);
-   }
-
-   var.key = "vice_mapper_l";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
-
-      mapper_keys[10] = keyId(var.value);
-   }
-
-   var.key = "vice_mapper_r";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
-
-      mapper_keys[11] = keyId(var.value);
-   }
-
-   var.key = "vice_mapper_l2";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
-
-      mapper_keys[12] = keyId(var.value);
-   }
-
-   var.key = "vice_mapper_r2";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
-
-      mapper_keys[13] = keyId(var.value);
-   }
-
-   var.key = "vice_mapper_l3";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
-
-      mapper_keys[14] = keyId(var.value);
-   }
-
-   var.key = "vice_mapper_r3";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
-
-      mapper_keys[15] = keyId(var.value);
-   }
-
-   var.key = "vice_mapper_start";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
-
-      mapper_keys[3] = keyId(var.value);
-   }
 
 }
 
 void Emu_init(void)
 {
-#ifdef RETRO_AND
-   MOUSE_EMULATED=1;
-#endif
    update_variables();
    pre_main(RPATH);
 }
@@ -991,9 +828,6 @@ void retro_init(void)
    {
       RETRO_DESCRIPTOR_BLOCK( 0 ),
       RETRO_DESCRIPTOR_BLOCK( 1 ),
-      RETRO_DESCRIPTOR_BLOCK( 2 ),
-      RETRO_DESCRIPTOR_BLOCK( 3 ),
-      RETRO_DESCRIPTOR_BLOCK( 4 ),
 
       { 0 },
    };
@@ -1001,7 +835,11 @@ void retro_init(void)
 #undef RETRO_DESCRIPTOR_BLOCK
 
    environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, &inputDescriptors);
+   
+#ifdef __X64__
    environ_cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE, &diskControl);
+#endif // __X64__
+   
    microSecCounter = 0;
 }
 
@@ -1019,12 +857,7 @@ unsigned retro_api_version(void)
 
 void retro_set_controller_port_device( unsigned port, unsigned device )
 {
-   if ( port < 2 )
-   {
-      vice_devices[ port ] = device;
-
-      log_cb(RETRO_LOG_INFO, "[retro_set_controller_port_device] (%d)=%d \n",port,device);
-   }
+	//
 }
 
 void retro_get_system_info(struct retro_system_info *info)
@@ -1033,13 +866,17 @@ void retro_get_system_info(struct retro_system_info *info)
 #define GIT_VERSION ""
 #endif
    memset(info, 0, sizeof(*info));
-   info->library_name     = "VICE " CORE_NAME;
-   info->library_version  = "3.0" GIT_VERSION;
-#if defined(__VIC20__)
+#ifdef __PLUS4__
+   info->library_name     = "VICE PLUS/4";
+   info->valid_extensions = "tap";
+#elif __VIC20__
+   info->library_name     = "VICE VIC20";
    info->valid_extensions = "20|40|60|a0|b0|d64|d71|d80|d81|d82|g64|g41|x64|t64|tap|prg|p00|crt|bin|zip|gz|d6z|d7z|d8z|g6z|g4z|x6z|cmd";
-#else
+#elif __X64__
+   info->library_name     = "VICE C64";
    info->valid_extensions = "d64|d71|d80|d81|d82|g64|g41|x64|t64|tap|prg|p00|crt|bin|zip|gz|d6z|d7z|d8z|g6z|g4z|x6z|cmd";
 #endif
+   info->library_version  = "3.0" GIT_VERSION;
    info->need_fullpath    = true;
    info->block_extract    = false;
 
@@ -1099,7 +936,8 @@ void retro_run(void)
    static int mfirst=1;
    bool updated = false;
 
-   if(lastW!=retroW || lastH!=retroH){
+   if ( lastW!=retroW || lastH!=retroH )
+   {
       update_geometry();
       log_cb(RETRO_LOG_INFO, "Update Geometry Old(%d,%d) New(%d,%d)\n",lastW,lastH,retroW,retroH);
       lastW=retroW;
@@ -1110,7 +948,7 @@ void retro_run(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
       update_variables();
 
-   if(mfirst==1)
+   if (mfirst==1)
    {
       mfirst++;
       log_cb(RETRO_LOG_INFO, "First time we return from retro_run()!\n");
@@ -1122,22 +960,18 @@ void retro_run(void)
       return;
    }
 
-   if(pauseg==0)
-   {
-      while(cpuloop==1)
-         maincpu_mainloop_retro();
-      cpuloop=1;
+	while(cpuloop==1)
+		maincpu_mainloop_retro();
+	cpuloop=1;
 
-      retro_blit();
-      if(SHOWKEY==1)app_render(0);
-   }
-   else if (pauseg==1)app_render(1);
-   //app_render(pauseg);
+	retro_blit();
 
-   video_cb(Retro_Screen,retroW,retroH,retrow<<PIXEL_BYTES);
+	video_cb(Retro_Screen,retroW,retroH,retrow<<PIXEL_BYTES);
 
-   if(want_quit)retro_shutdown_core();
-   microSecCounter += (1000000/50);
+	if(want_quit)
+		retro_shutdown_core();
+	
+	microSecCounter += (1000000/50);
 }
 
 /*
@@ -1186,7 +1020,7 @@ void retro_unload_game(void){
 
 unsigned retro_get_region(void)
 {
-   return RETRO_REGION_NTSC;
+   return is_pal_system ? RETRO_REGION_PAL : RETRO_REGION_NTSC;
 }
 
 bool retro_load_game_special(unsigned type, const struct retro_game_info *info, size_t num)

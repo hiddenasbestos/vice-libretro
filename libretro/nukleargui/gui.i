@@ -75,7 +75,6 @@ extern int pauseg;
 extern int NPAGE,SHIFTON;
 extern int vkey_pressed;
 extern int vice_statusbar;
-extern unsigned int cur_port;
 extern int retrojoy_init;
 
 extern char DISKA_NAME[512];
@@ -116,10 +115,6 @@ gui(struct file_browser *browser,struct nk_context *ctx)
 
     int tmpval;
 
-    if(pauseg==1 && SHOWKEY==1)SHOWKEY=-1;
-    if(pauseg==0 && SHOWKEY==1)GUISTATE=GUI_VKBD;
-    if(pauseg==1 && SHOWKEY==-1 && LOADCONTENT==1)GUISTATE=GUI_BROWSE;
-    if(pauseg==1 && SHOWKEY==-1 && LOADCONTENT!=1)GUISTATE=GUI_MAIN;
 
     switch(GUISTATE){
 
@@ -152,11 +147,6 @@ gui(struct file_browser *browser,struct nk_context *ctx)
 
     }
 
-    if(pauseg==1 && SHOWKEY==1)SHOWKEY=-1;
-    if(pauseg==0 && SHOWKEY==1)GUISTATE=GUI_VKBD;
-    if(pauseg==1 && SHOWKEY==-1 && LOADCONTENT==1)GUISTATE=GUI_BROWSE;
-    if(pauseg==1 && SHOWKEY==-1 && LOADCONTENT!=1)GUISTATE=GUI_MAIN;
-
-return GUISTATE;
+ return GUI_MAIN;
 }
 

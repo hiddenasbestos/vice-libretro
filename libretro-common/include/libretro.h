@@ -572,6 +572,13 @@ enum retro_mod
                                             * This is used for games which consist of multiple images and
                                             * must be manually swapped out by the user (e.g. PSX).
                                             */
+// DWD BEGIN
+#define RETRO_ENVIRONMENT_SET_TAPE_COUNTER 1013
+                                           /* const int * --
+                                            * Tells the frontend what the current value of the tape counter
+											* is. Passing a negative value means there is no tape value.
+                                            */
+// DWD END
 #define RETRO_ENVIRONMENT_SET_HW_RENDER 14
                                            /* struct retro_hw_render_callback * --
                                             * Sets an interface to let a libretro core render with
