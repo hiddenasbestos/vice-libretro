@@ -90,7 +90,6 @@ int Core_PollEvent(void)
    int16_t mouse_x,mouse_y;
    mouse_x=mouse_y=0;
 
-   if(SHOWKEY==-1 && pauseg==0)
    	Core_Processkey();
 
    if(slowdown>0)return 0;
@@ -125,7 +124,7 @@ int Core_PollEvent(void)
       mmbR=0;
    }
 
-   if(pauseg==0 && c64mouse_enable){
+   if(c64mouse_enable){
 
       mouse_move((int)mouse_x, (int)mouse_y);
       mouse_button(0,mmbL);
@@ -135,55 +134,51 @@ int Core_PollEvent(void)
   return 1;
 }
 
-void retro_poll_event(int joyon)
+void retro_poll_event()
 {
 	Core_PollEvent();
 
-	if ( joyon ) // retro joypad take control over keyboard joy
+	int retro_port;
+	for (retro_port = 0; retro_port < 2; retro_port++)
 	{
-		int retro_port;
-		for (retro_port = 0; retro_port < 2; retro_port++)
-		{
-			int vice_port = retro_port + 1;
-			BYTE j = joystick_value[vice_port];
-			
-			// Directions.
+		int vice_port = retro_port + 1;
+		BYTE j = joystick_value[vice_port];
+		
+		// Directions.
 
-			if (input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP) ){
-				j |= 0x01;
-			} else {
-				j &= ~0x01;
-			}
-			if (input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN) ){
-				j |= 0x02;
-			} else {
-				j &= ~0x02;
-			}
-			if (input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT) ){
-				j |= 0x04;
-			} else {
-				j &=~ 0x04;
-			}
-			if (input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT) ){
-				j |= 0x08;
-			} else {
-				j &= ~0x08;
-			}
-
-			// Fire.
-			if (input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A) ||
-				input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B) )
-			{
-				j |= 0x10;
-			}
-			else
-			{
-				j &= ~0x10;
-			}
-
-			joystick_value[vice_port] = j;
+		if (input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP) ){
+			j |= 0x01;
+		} else {
+			j &= ~0x01;
 		}
-	}
+		if (input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN) ){
+			j |= 0x02;
+		} else {
+			j &= ~0x02;
+		}
+		if (input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT) ){
+			j |= 0x04;
+		} else {
+			j &=~ 0x04;
+		}
+		if (input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT) ){
+			j |= 0x08;
+		} else {
+			j &= ~0x08;
+		}
 
+		// Fire.
+		if (input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A) ||
+			input_state_cb(retro_port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B) )
+		{
+			j |= 0x10;
+		}
+		else
+		{
+			j &= ~0x10;
+		}
+
+		joystick_value[vice_port] = j;
+	}
 }
 

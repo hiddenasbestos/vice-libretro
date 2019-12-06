@@ -31,8 +31,6 @@
 
 extern int joy_arch_init(void);
 extern void joystick_close(void);
-extern int joystick_arch_init_resources(void);
-extern int joystick_init_cmdline_options(void);
 extern void joystick_update(void);
 
 #define JOYDEV_NONE     0

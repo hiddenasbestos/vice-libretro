@@ -27,14 +27,10 @@ int cpuloop=1;
 #ifdef FRONTEND_SUPPORTS_RGB565
 	uint16_t *Retro_Screen;
 	uint16_t bmp[WINDOW_SIZE];
-	uint16_t save_Screen[WINDOW_SIZE];
 #else
 	unsigned int *Retro_Screen;
 	unsigned int bmp[WINDOW_SIZE];
-	unsigned int save_Screen[WINDOW_SIZE];
 #endif
-
-int vice_statusbar=0;
 
 //SOUND
 short signed int SNDBUF[1024*2];
@@ -44,11 +40,7 @@ int snd_sampler = 44100 / 50;
 //PATH
 char RPATH[512];
 
-int pauseg=0; //emu status run/pause/end
 int want_quit=0;
-
-extern int app_init(void);
-extern int app_free(void);
 
 int CROP_WIDTH;
 int CROP_HEIGHT;
@@ -63,11 +55,10 @@ int retroh=768;
 int lastW=1024;
 int lastH=768;
 
-extern int RETROJOY,RETROTDE,RETROSTATUS,RETRODRVTYPE,RETROSIDMODL,RETROC64MODL,RETROUSERPORTJOY;
-extern int retrojoy_init,retro_ui_finalized;
+extern int RETROTDE,RETRODRVTYPE,RETROSIDMODL,RETROC64MODL,RETROUSERPORTJOY;
+extern int retro_ui_finalized;
 extern void set_drive_type(int drive,int val);
 extern void set_truedrive_emulation(int val);
-extern void reset_mouse_pos();
 
 //VICE DEF BEGIN
 #include "resources.h"
@@ -317,16 +308,6 @@ long GetTicks(void) {
    return microSecCounter;
 }
 
-void save_bkg(void)
-{
-   memcpy(save_Screen,Retro_Screen,PITCH*WINDOW_SIZE);
-}
-
-void restore_bgk(void)
-{
-   memcpy(Retro_Screen,save_Screen,PITCH*WINDOW_SIZE);
-}
-
 void Screen_SetFullUpdate(int scr)
 {
    if(scr==0 ||scr>1)
@@ -427,15 +408,6 @@ static void update_variables(void)
 {
 	struct retro_variable var;
 
-	if ( retro_ui_finalized )
-	{
-		vice_statusbar = 0;
-	}
-	else
-	{
-		RETROSTATUS = 0;
-	}
-
 #ifdef __PLUS4__
 
 	var.key = "vice_PLUS4Video";
@@ -477,15 +449,6 @@ static void update_variables(void)
 	else
 	{
 		RETROUSERPORTJOY=-1;
-	}
-
-	if ( retrojoy_init )
-	{
-		resources_set_int( "RetroJoy", 1 );
-	}
-	else
-	{
-		RETROJOY=1;
 	}
 
 	if ( retro_ui_finalized )
@@ -806,6 +769,8 @@ void retro_init(void)
       exit(0);
    }
 
+   Retro_Screen = bmp;
+
 #define RETRO_DESCRIPTOR_BLOCK( _user )                                            \
    { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "A" },               \
    { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B, "B" },               \
@@ -845,7 +810,6 @@ void retro_init(void)
 
 void retro_deinit(void)
 {
-   app_free();
    Emu_uninit();
 }
 
@@ -921,9 +885,11 @@ void retro_audio_cb( short l, short r)
    audio_cb(l,r);
 }
 
-void retro_audiocb(signed short int *sound_buffer,int sndbufsize){
+void retro_audiocb(signed short int *sound_buffer,int sndbufsize)
+{
    int x;
-   if(pauseg==0)for(x=0;x<sndbufsize;x++)audio_cb(sound_buffer[x],sound_buffer[x]);
+   for(x=0;x<sndbufsize;x++)
+   	audio_cb(sound_buffer[x],sound_buffer[x]);
 }
 
 void retro_blit(void)
@@ -942,7 +908,6 @@ void retro_run(void)
       log_cb(RETRO_LOG_INFO, "Update Geometry Old(%d,%d) New(%d,%d)\n",lastW,lastH,retroW,retroH);
       lastW=retroW;
       lastH=retroH;
-      reset_mouse_pos();
    }
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
@@ -953,7 +918,6 @@ void retro_run(void)
       mfirst++;
       log_cb(RETRO_LOG_INFO, "First time we return from retro_run()!\n");
       retro_load_ok=true;
-      app_init();
       memset(SNDBUF,0,1024*2*2);
 
       Emu_init();
@@ -1013,9 +977,9 @@ bool retro_load_game(const struct retro_game_info *info)
    return true;
 }
 
-void retro_unload_game(void){
-
-   pauseg=-1;
+void retro_unload_game(void)
+{
+	//
 }
 
 unsigned retro_get_region(void)

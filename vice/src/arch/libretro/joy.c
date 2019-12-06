@@ -37,55 +37,18 @@
 #include "translate.h"
 #include "types.h"
 
-
-int retrojoy_enabled;
-int retrojoy_init=0;
-
-static int set_retrojoy(int val, void *param)
+static const resource_int_t resources_int[] =
 {
-    retrojoy_enabled = val ? 1 : 0;
-
-    return 0;
-}
-
-static const resource_int_t retrojoy_resources_int[] = {
-    { "RetroJoy", 0, RES_EVENT_NO, NULL,
-      &retrojoy_enabled, set_retrojoy, NULL },
-    RESOURCE_INT_LIST_END
-};
-
-
-static const resource_int_t resources_int[] = {
     { NULL }
 };
 
 /* ------------------------------------------------------------------------- */
 
-int joystick_arch_init_resources(void)
-{
-
-	if(resources_register_int(retrojoy_resources_int)<0)return -1;
-
-	retrojoy_init=1;
-
-    return resources_register_int(resources_int);
-}
-
 int joy_arch_resources_init(void)
 {
-	if(resources_register_int(retrojoy_resources_int)<0)return -1;
-
-	retrojoy_init=1;
-
     return resources_register_int(resources_int);
-   // return 0;
 }
 int joy_arch_cmdline_options_init(void)
-{
-    return 0;
-}
-
-int joystick_init_cmdline_options(void)
 {
     return 0;
 }
@@ -94,11 +57,6 @@ int joystick_init_cmdline_options(void)
 
 int joy_arch_set_device(int port, int new_dev)
 {
-/*
-    if (new_dev < 0 || new_dev > JOYDEV_MAX) {
-        return -1;
-    }
-*/
     return 0;
 }
 
@@ -111,6 +69,7 @@ int joy_arch_init(void)
 /* Update the `joystick_value' variables according to the joystick status.  */
 void joystick_update(void)
 {
+	//
 }
 
 void joystick_close(void)

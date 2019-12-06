@@ -29,15 +29,4 @@
 
 #include "vice.h"
 
-#define UISTATUSBAR_ACTIVE  (1 << 0)
-#define UISTATUSBAR_REPAINT (1 << 1)
-
-extern int uistatusbar_state;
-
-extern void uistatusbar_open(void);
-extern void uistatusbar_close(void);
-extern void uistatusbar_draw(void);
-
-extern int uistatusbar_init_resources(void);
-
 #endif
