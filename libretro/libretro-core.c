@@ -1,6 +1,11 @@
 #include "libretro.h"
 #include "libretro-core.h"
 
+#ifdef __PLUS4__
+#include "plus4mem.h"
+extern BYTE mem_ram[PLUS4_RAM_SIZE];
+#endif // __PLUS4__
+
 //CORE VAR
 #ifdef _WIN32
 char slash = '\\';
@@ -1012,12 +1017,37 @@ bool retro_unserialize(const void *data_, size_t size)
 
 void *retro_get_memory_data(unsigned id)
 {
+
+#ifdef __PLUS4__
+
+   switch ( id & RETRO_MEMORY_MASK )
+   {
+
+   case RETRO_MEMORY_SYSTEM_RAM:
+      return mem_ram;
+
+   }
+
+#endif // __PLUS4__
+
    (void)id;
    return NULL;
 }
 
 size_t retro_get_memory_size(unsigned id)
 {
+#ifdef __PLUS4__
+
+   switch ( id & RETRO_MEMORY_MASK )
+   {
+
+   case RETRO_MEMORY_SYSTEM_RAM:
+      return PLUS4_RAM_SIZE;
+
+   }
+
+#endif // __PLUS4__
+
    (void)id;
    return 0;
 }
