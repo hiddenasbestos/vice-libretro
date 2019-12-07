@@ -44,7 +44,7 @@
 #include <string.h>
 #include <stdarg.h>
 
-int RETROTDE=0,RETRODRVTYPE=1542,RETROSIDMODL=0,RETROC64MODL=0,RETROUSERPORTJOY=-1;
+int RETROTDE=0,RETRODRVTYPE=1542,RETROSIDMODL=0,RETROC64MODL=0;
 int retro_ui_finalized = 0;
 
 static const cmdline_option_t cmdline_options[] =
@@ -126,12 +126,6 @@ int ui_init_finalize(void)
 
    resources_set_int( "CrtcFilter",0);
    resources_set_int( "CrtcStretchVertical",0);
-
-   if(RETROUSERPORTJOY==-1)resources_set_int("UserportJoy", 0);
-   else {
-      resources_set_int("UserportJoy", 1);
-      resources_set_int("UserportJoyType", RETROUSERPORTJOY);
-   }
 
    if(RETROTDE==1){
 	resources_set_int("DriveTrueEmulation", 1);

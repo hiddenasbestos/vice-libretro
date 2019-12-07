@@ -60,7 +60,7 @@ int retroh=768;
 int lastW=1024;
 int lastH=768;
 
-extern int RETROTDE,RETRODRVTYPE,RETROSIDMODL,RETROC64MODL,RETROUSERPORTJOY;
+extern int RETROTDE,RETRODRVTYPE,RETROSIDMODL,RETROC64MODL;
 extern int retro_ui_finalized;
 extern void set_drive_type(int drive,int val);
 extern void set_truedrive_emulation(int val);
@@ -445,15 +445,6 @@ static void update_variables(void)
 		{
 			RETROC64MODL = modl;
 		}
-	}
-
-	if( retro_ui_finalized )
-	{
-		resources_set_int("UserportJoy", 0);
-	}
-	else
-	{
-		RETROUSERPORTJOY=-1;
 	}
 
 	if ( retro_ui_finalized )
