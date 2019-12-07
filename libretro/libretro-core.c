@@ -451,7 +451,7 @@ static void update_variables(void)
 	{
 		set_drive_type( 8, 1541 ); // 1551 also supported.
 		set_truedrive_emulation( 1 );
-		resources_set_int("VirtualDevices", 0);
+		resources_set_int( "VirtualDevices", 0 ); // <-- key to PRG support?
 	}
 	else
 	{

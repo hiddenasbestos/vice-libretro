@@ -92,45 +92,18 @@ static void display_tape(void)
 	}
 }
 
-static int per = 0;
-static int fps = 0;
-static int warp = 0;
-static int paused = 0;
-
-static void display_speed(void)
-{
-    int len;
-    char sep = paused ? ('P' | 0x80) : warp ? ('W' | 0x80) : '/';
-
-    len = sprintf(&(statusbar_text[STATUSBAR_SPEED_POS]), "%3d%%%c%2dfps", per, sep, fps);
-    statusbar_text[STATUSBAR_SPEED_POS + len] = ' ';
-}
 
 /* ----------------------------------------------------------------- */
 /* ui.h */
 
 void ui_display_speed(float percent, float framerate, int warp_flag)
 {
-    per = (int)(percent + .5);
-    if (per > 999) {
-        per = 999;
-    }
-
-    fps = (int)(framerate + .5);
-    if (fps > 99) {
-        fps = 99;
-    }
-
-    warp = warp_flag;
-
-    display_speed();
+    //
 }
 
 void ui_display_paused(int flag)
 {
-    paused = flag;
-
-    display_speed();
+    //
 }
 
 /* ----------------------------------------------------------------- */
@@ -150,13 +123,18 @@ void ui_enable_drive_status(ui_drive_enable_t state, int *drive_led_color)
     int drive_number;
     int drive_state = (int)state;
 
-    for (drive_number = 0; drive_number < 4; ++drive_number) {
-        if (drive_state & 1) {
+    for (drive_number = 0; drive_number < 4; ++drive_number)
+	{
+        if (drive_state & 1)
+		{
             ui_display_drive_led(drive_number, 0, 0);
-        } else {
+        }
+		else
+		{
             statusbar_text[STATUSBAR_DRIVE_POS + drive_number] = ' ';
         }
-        drive_state >>= 1;
+        
+		drive_state >>= 1;
     }
 }
 
@@ -168,7 +146,8 @@ void ui_display_drive_track(unsigned int drive_number, unsigned int drive_base, 
     fprintf(stderr, "%s\n", __func__);
 #endif
 
-    switch (drive_number) {
+    switch (drive_number)
+	{
         case 1:
             statusbar_text[STATUSBAR_DRIVE9_TRACK_POS] = (track_number / 10) + '0';
             statusbar_text[STATUSBAR_DRIVE9_TRACK_POS + 1] = (track_number % 10) + '0';
@@ -205,7 +184,6 @@ void ui_display_drive_led(int drive_number, unsigned int pwm1, unsigned int led_
 
 void ui_display_drive_current_image(unsigned int drive_number, const char *image)
 {
-printf("d%d -> %s\n",drive_number, image);
 #ifdef SDL_DEBUG
     fprintf(stderr, "%s\n", __func__);
 #endif
