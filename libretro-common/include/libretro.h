@@ -578,6 +578,11 @@ enum retro_mod
                                             * Tells the frontend what the current value of the tape counter
 											* is. Passing a negative value means there is no tape value.
                                             */
+#define RETRO_ENVIRONMENT_DISK_DRIVE_LED_BLINK 1014
+                                           /* const int * --
+                                            * Tells the frontend to blink an activity light for the numbered
+											* disk drive.
+                                            */
 // DWD END
 #define RETRO_ENVIRONMENT_SET_HW_RENDER 14
                                            /* struct retro_hw_render_callback * --
