@@ -26,8 +26,8 @@ int KCOL=1;
 int SND=1;
 int vkey_pressed;
 unsigned char MXjoy[2]; // joy
-char Core_Key_Sate[512];
-char Core_old_Key_Sate[512];
+char Core_Key_Sate[RETROK_LAST];
+char Core_old_Key_Sate[RETROK_LAST];
 int PAS=4;
 int slowdown=0;
 int pushi=0; //mouse button
@@ -46,12 +46,12 @@ void Core_Processkey(void)
 {
    int i;
 
-   for(i=0;i<320;i++)
+   for(i=0;i<RETROK_LAST;i++)
       Core_Key_Sate[i]=input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0,i) ? 0x80: 0;
 
    if(memcmp( Core_Key_Sate,Core_old_Key_Sate , sizeof(Core_Key_Sate) ) )
    {
-      for(i=0;i<320;i++)
+      for ( i = 0; i < RETROK_LAST; ++i )
 	  {
          if(Core_Key_Sate[i] && Core_Key_Sate[i]!=Core_old_Key_Sate[i]  )
          {	

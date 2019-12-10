@@ -4,7 +4,7 @@
 #include "keyboard.h"
 #include "datasette.h"
 
-//extern retro_log_printf_t log_cb;
+extern retro_log_printf_t log_cb;
 
 int kbd_handle_keydown(int kcode)
 {

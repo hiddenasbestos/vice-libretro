@@ -1426,6 +1426,7 @@ int keyboard_set_keyboard_type(int val, void *param)
 }
 
 #ifdef __LIBRETRO__
+#include "libretro.h"
 #include "defaultkey.inc"
 #endif
 
