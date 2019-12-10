@@ -53,30 +53,29 @@ extern retro_log_printf_t log_cb;
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
-#define MAX_STATUSBAR_LEN           128
-#define STATUSBAR_SPEED_POS         0
-#define STATUSBAR_PAUSE_POS         4
-#define STATUSBAR_DRIVE_POS         12
-#define STATUSBAR_DRIVE8_TRACK_POS  14
-#define STATUSBAR_DRIVE9_TRACK_POS  19
-#define STATUSBAR_DRIVE10_TRACK_POS 24
-#define STATUSBAR_DRIVE11_TRACK_POS 29
-#define STATUSBAR_TAPE_POS          33
-
-static char statusbar_text[MAX_STATUSBAR_LEN] = "                                       ";
-
-
 static int pitch;
 static int draw_offset;
 
+// disk drive
+static int drive_enable[ 4 ] = { 0, 0, 0, 0 };
+static int drive_track[ 4 ] = { -1, -1, -1, -1 };
 
+static void retro_drive_led_blink(int drive_number)
+{
+	if ( environ_cb )
+	{
+		environ_cb( RETRO_ENVIRONMENT_DISK_DRIVE_LED_BLINK, &drive_number );
+//		log_cb( RETRO_LOG_INFO, "BLINK:%c; ", "8901"[drive_number] );
+	}
+}
 
+// tape
 static int tape_counter = 0;
 static int tape_enabled = 0;
 static int tape_motor = 0;
 static int tape_control = 0;
 
-static void display_tape(void)
+static void retro_set_tape_counter(void)
 {
 	// Tell front-end
 	if ( environ_cb )
@@ -123,17 +122,16 @@ void ui_enable_drive_status(ui_drive_enable_t state, int *drive_led_color)
 {
     int drive_number;
     int drive_state = (int)state;
-
-    for (drive_number = 0; drive_number < 4; ++drive_number)
+	  
+	for ( drive_number = 0; drive_number < 4; ++drive_number )
 	{
-        if (drive_state & 1)
+		int enable = ( drive_state & 1 ) ? 1 : 0;
+
+		if ( enable != drive_enable[ drive_number ] )
 		{
-            ui_display_drive_led(drive_number, 0, 0);
-        }
-		else
-		{
-            statusbar_text[STATUSBAR_DRIVE_POS + drive_number] = ' ';
-        }
+			 drive_enable[ drive_number ] = enable;
+			 drive_track[ drive_number ] = -1;
+		}
         
 		drive_state >>= 1;
     }
@@ -147,26 +145,15 @@ void ui_display_drive_track(unsigned int drive_number, unsigned int drive_base, 
     fprintf(stderr, "%s\n", __func__);
 #endif
 
-    switch (drive_number)
+	if ( drive_enable[ drive_number ] )
 	{
-        case 1:
-            statusbar_text[STATUSBAR_DRIVE9_TRACK_POS] = (track_number / 10) + '0';
-            statusbar_text[STATUSBAR_DRIVE9_TRACK_POS + 1] = (track_number % 10) + '0';
-            break;
-        case 2:
-            statusbar_text[STATUSBAR_DRIVE10_TRACK_POS] = (track_number / 10) + '0';
-            statusbar_text[STATUSBAR_DRIVE10_TRACK_POS + 1] = (track_number % 10) + '0';
-            break;
-        case 3:
-            statusbar_text[STATUSBAR_DRIVE11_TRACK_POS] = (track_number / 10) + '0';
-            statusbar_text[STATUSBAR_DRIVE11_TRACK_POS + 1] = (track_number % 10) + '0';
-            break;
-        default:
-        case 0:
-            statusbar_text[STATUSBAR_DRIVE8_TRACK_POS] = (track_number / 10) + '0';
-            statusbar_text[STATUSBAR_DRIVE8_TRACK_POS + 1] = (track_number % 10) + '0';
-            break;
-    }
+		// Track change?
+		if ( drive_track[ drive_number ] != track_number )
+		{
+			drive_track[ drive_number ] = track_number;
+			retro_drive_led_blink( drive_number );
+		}
+	}
 }
 
 /* The pwm value will vary between 0 and 1000.  */
@@ -178,9 +165,13 @@ void ui_display_drive_led(int drive_number, unsigned int pwm1, unsigned int led_
     fprintf(stderr, "%s: drive %i, pwm1 = %i, led_pwm2 = %u\n", __func__, drive_number, pwm1, led_pwm2);
 #endif
 
-    c = "8901"[drive_number] | ((pwm1 > 500) ? 0x80 : 0);
-    statusbar_text[STATUSBAR_DRIVE_POS + (drive_number * 5)] = c;
-    statusbar_text[STATUSBAR_DRIVE_POS + (drive_number * 5) + 1] = 'T';
+	// log_cb( RETRO_LOG_INFO, "PWM:%i;%u; ", pwm1, led_pwm2 );
+
+	// Track change?
+	if ( drive_enable[ drive_number ] && ( pwm1 > 666 ) )
+	{
+		retro_drive_led_blink( drive_number );
+	}
 }
 
 void ui_display_drive_current_image(unsigned int drive_number, const char *image)
@@ -196,28 +187,28 @@ void ui_set_tape_status(int tape_status)
 {
     tape_enabled = tape_status;
 
-    display_tape();
+    retro_set_tape_counter();
 }
 
 void ui_display_tape_motor_status(int motor)
 {
     tape_motor = motor;
 
-    display_tape();
+    retro_set_tape_counter();
 }
 
 void ui_display_tape_control_status(int control)
 {
     tape_control = control;
 
-    display_tape();
+    retro_set_tape_counter();
 }
 
 void ui_display_tape_counter(int counter)
 {
     if (tape_counter != counter)
 	{
-        display_tape();
+        retro_set_tape_counter();
     }
 
     tape_counter = counter;
