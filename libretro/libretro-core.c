@@ -357,7 +357,7 @@ void retro_set_environment(retro_environment_t cb)
 
 	  {
          "vice_VIC20memory",
-         "Memory Expansion; 24KB|NONE|3KB|8KB|16KB|35KB",
+         "Memory Expansion; NONE|3KB|8KB|16KB|24KB|32KB|35KB",
       },
 
 #elif __PLUS4__
@@ -497,6 +497,8 @@ static void update_variables(void)
 
 		if (strcmp(var.value, "35KB") == 0)
 			size = 35;
+		else if (strcmp(var.value, "32KB") == 0)
+			size = 32;
 		else if (strcmp(var.value, "24KB") == 0)
 			size = 24;
 		else if (strcmp(var.value, "16KB") == 0)
@@ -532,6 +534,10 @@ static void update_variables(void)
 
 		case 24:
 			RETROVIC20RAM = VIC_BLK1 | VIC_BLK2 | VIC_BLK3;
+			break;
+
+		case 32:
+			RETROVIC20RAM = VIC_BLK1 | VIC_BLK2 | VIC_BLK3 | VIC_BLK5;
 			break;
 
 		case 35:
