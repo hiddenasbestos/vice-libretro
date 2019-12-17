@@ -6,6 +6,11 @@
 extern BYTE mem_ram[PLUS4_RAM_SIZE];
 #endif // __PLUS4__
 
+#ifdef __VIC20__
+#include "vic20mem.h"
+extern BYTE mem_ram[VIC20_RAM_SIZE];
+#endif // __VIC20__
+
 //CORE VAR
 #ifdef _WIN32
 char slash = '\\';
@@ -1008,9 +1013,6 @@ bool retro_unserialize(const void *data_, size_t size)
 
 void *retro_get_memory_data(unsigned id)
 {
-
-#ifdef __PLUS4__
-
    switch ( id & RETRO_MEMORY_MASK )
    {
 
@@ -1019,28 +1021,25 @@ void *retro_get_memory_data(unsigned id)
 
    }
 
-#endif // __PLUS4__
-
-   (void)id;
    return NULL;
 }
 
 size_t retro_get_memory_size(unsigned id)
 {
+	switch ( id & RETRO_MEMORY_MASK )
+	{
+
 #ifdef __PLUS4__
+	case RETRO_MEMORY_SYSTEM_RAM:
+		return PLUS4_RAM_SIZE;
+#elif __VIC20__
+	case RETRO_MEMORY_SYSTEM_RAM:
+		return VIC20_RAM_SIZE;
+#endif
 
-   switch ( id & RETRO_MEMORY_MASK )
-   {
+	}
 
-   case RETRO_MEMORY_SYSTEM_RAM:
-      return PLUS4_RAM_SIZE;
-
-   }
-
-#endif // __PLUS4__
-
-   (void)id;
-   return 0;
+	return 0;
 }
 
 void retro_cheat_reset(void) {}
