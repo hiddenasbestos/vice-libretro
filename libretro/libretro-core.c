@@ -346,16 +346,16 @@ void retro_set_environment(retro_environment_t cb)
 
    struct retro_variable variables[] =
    {
- 
+
  #ifdef __VIC20__
-      
+
 	  {
-         "vice_VIC20Model",
-         "VIC20Model; VIC20MODEL_VIC20_PAL|VIC20MODEL_VIC20_NTSC|VIC20MODEL_VIC21|VIC20MODEL_UNKNOWN",
+         "vice_VIC20Video",
+         "Video Standard; PAL|NTSC",
       },
 
 #elif __PLUS4__
-      
+
 	  {
          "vice_PLUS4Video",
          "Video Standard; PAL|NTSC",
@@ -366,12 +366,12 @@ void retro_set_environment(retro_environment_t cb)
       },
 
 #elif __X128__
-      
+
 	  {
          "vice_SidModel",
          "SidModel; 6581F|8580F|6581R|8580R|8580RD",
       },
-      
+
 	  {
          "vice_C128Model",
          "C128Model; C128MODEL_C128_PAL|C128MODEL_C128DCR_PAL|C128MODEL_C128_NTSC|C128MODEL_C128DCR_NTSC|C128MODEL_UNKNOWN",
@@ -423,16 +423,27 @@ static void update_variables(void)
 	var.key = "vice_PLUS4Video";
 	var.value = NULL;
 
+#elif __VIC20__
+
+	var.key = "vice_VIC20Video";
+	var.value = NULL;
+
+#endif
+
 	if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
 	{
 		is_pal_system = 1;
 		if (strcmp(var.value, "NTSC") == 0)
 			is_pal_system = 0;
 	}
-		
+
+#ifdef __PLUS4__
+
+	// PLUS/4 or C-16 ?  PAL or NTSC ?
+
 	var.key = "vice_PLUS4Model";
 	var.value = NULL;
-		
+
 	if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
 	{
 		int modl = is_pal_system ? PLUS4MODEL_PLUS4_PAL : PLUS4MODEL_PLUS4_NTSC;
@@ -446,152 +457,44 @@ static void update_variables(void)
 		{
 			plus4model_set( modl );
 		}
-		else 
+		else
 		{
 			RETROC64MODL = modl;
 		}
 	}
 
+#elif __VIC20__
+
+	// VIC 20 model -> just PAL/NTSC options.
+
+	{
+		int modl = is_pal_system ? VIC20MODEL_VIC20_PAL : VIC20MODEL_VIC20_NTSC;
+
+		if ( retro_ui_finalized )
+		{
+			vic20model_set( modl );
+		}
+		else
+		{
+			RETROC64MODL = modl;
+		}
+	}
+
+#endif
+
+	// Add a disk drive.
+
 	if ( retro_ui_finalized )
 	{
-		set_drive_type( 8, 1541 ); // 1551 also supported.
+		set_drive_type( 8, 1541 ); // 1551 also supported on PLUS/4.
 		set_truedrive_emulation( 1 );
 		resources_set_int( "VirtualDevices", 0 ); // <-- key to PRG support?
 	}
 	else
 	{
-		RETRODRVTYPE = 1541; // 1551 also supported.
+		RETRODRVTYPE = 1541; // 1551 also supported on PLUS/4.
 		RETROTDE = 1;
 	}
-   
-#else // __PLUS4__
-
-   var.key = "vice_Drive8Type";
-   var.value = NULL;
-
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
-      char str[100];
-      int val;
-      snprintf(str, sizeof(str), "%s", var.value);
-      val = strtoul(str, NULL, 0);
-
-      if(retro_ui_finalized)
-         set_drive_type(8, val);
-      else RETRODRVTYPE=val;
-   }
-
-   var.key = "vice_DriveTrueEmulation";
-   var.value = NULL;
-
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
-      if(retro_ui_finalized){
-         if (strcmp(var.value, "enabled") == 0){
-            set_truedrive_emulation(1);
-        resources_set_int("VirtualDevices", 0);
-         }
-         if (strcmp(var.value, "disabled") == 0){
-            set_truedrive_emulation(0);
-            resources_set_int("VirtualDevices", 1);
-     }
-      }
-      else  {
-         if (strcmp(var.value, "enabled") == 0)RETROTDE=1;
-         if (strcmp(var.value, "disabled") == 0)RETROTDE=0;
-      }
-   }
-
-   var.key = "vice_SidModel";
-   var.value = NULL;
-
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
-      int eng=0,modl=0,sidmdl=0;
-
-      if (strcmp(var.value, "6581F") == 0){eng=0;modl=0;}
-      else if (strcmp(var.value, "8580F") == 0){eng=0;modl=1;}
-      else if (strcmp(var.value, "6581R") == 0){eng=1;modl=0;}
-      else if (strcmp(var.value, "8580R") == 0){eng=1;modl=1;}
-      else if (strcmp(var.value, "8580RD") == 0){eng=1;modl=2;}
-
-      sidmdl=((eng << 8) | modl) ;
-
-      if(retro_ui_finalized)
-        sid_set_engine_model(eng, modl);
-      else RETROSIDMODL=sidmdl;
-   }
-
-#endif // __PLUS4__
-
-#if  defined(__VIC20__)
-   var.key = "vice_VIC20Model";
-   var.value = NULL;
-
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
-      int modl=0;
-
-      if (strcmp(var.value, "VIC20MODEL_VIC20_PAL") == 0)modl=VIC20MODEL_VIC20_PAL;
-      else if (strcmp(var.value, "VIC20MODEL_VIC20_NTSC") == 0)modl=VIC20MODEL_VIC20_NTSC;
-      else if (strcmp(var.value, "VIC20MODEL_VIC21") == 0)modl=VIC20MODEL_VIC21;
-      else if (strcmp(var.value, "VIC20MODEL_UNKNOWN") == 0)modl=VIC20MODEL_UNKNOWN;
-
-      if(retro_ui_finalized)
-        vic20model_set(modl);
-      else RETROC64MODL=modl;
-   }
-
-#elif  defined(__X128__)
-   var.key = "vice_C128Model";
-   var.value = NULL;
-
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
-      int modl=0;
-
-      if (strcmp(var.value, "C128MODEL_C128_PAL") == 0)modl=C128MODEL_C128_PAL;
-      else if (strcmp(var.value, "C128MODEL_C128DCR_PAL") == 0)modl=C128MODEL_C128DCR_PAL;
-      else if (strcmp(var.value, "C128MODEL_C128_NTSC") == 0)modl=C128MODEL_C128_NTSC;
-      else if (strcmp(var.value, "C128MODEL_C128DCR_NTSC") == 0)modl=C128MODEL_C128DCR_NTSC;
-      else if (strcmp(var.value, "C128MODEL_UNKNOWN") == 0)modl=C128MODEL_UNKNOWN;
-      if(retro_ui_finalized)
-        c128model_set(modl);
-      else RETROC64MODL=modl;
-   }
-
-#elif __X64__
-
-   var.key = "vice_C64Model";
-   var.value = NULL;
-
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
-      int modl=0;
-
-      if (strcmp(var.value, "C64MODEL_C64_PAL") == 0)modl=C64MODEL_C64_PAL;
-      else if (strcmp(var.value, "C64MODEL_C64C_PAL") == 0)modl=C64MODEL_C64C_PAL;
-      else if (strcmp(var.value, "C64MODEL_C64_OLD_PAL") == 0)modl=C64MODEL_C64_OLD_PAL;
-      else if (strcmp(var.value, "C64MODEL_C64_NTSC") == 0)modl=C64MODEL_C64_NTSC;
-      else if (strcmp(var.value, "C64MODEL_C64C_NTSC") == 0)modl=C64MODEL_C64C_NTSC;
-      else if (strcmp(var.value, "C64MODEL_C64_OLD_NTSC") == 0)modl=C64MODEL_C64_OLD_NTSC;
-      else if (strcmp(var.value, "C64MODEL_C64_PAL_N") == 0)modl=C64MODEL_C64_PAL_N;
-      else if (strcmp(var.value, "C64MODEL_C64SX_PAL") == 0)modl=C64MODEL_C64SX_PAL;
-      else if (strcmp(var.value, "C64MODEL_C64SX_NTSC") == 0)modl=C64MODEL_C64SX_NTSC;
-      else if (strcmp(var.value, "C64MODEL_C64_JAP") == 0)modl=C64MODEL_C64_JAP;
-      else if (strcmp(var.value, "C64MODEL_C64_GS") == 0)modl=C64MODEL_C64_GS;
-      else if (strcmp(var.value, "C64MODEL_PET64_PAL") == 0)modl=C64MODEL_PET64_PAL;
-      else if (strcmp(var.value, "C64MODEL_PET64_NTSC") == 0)modl=C64MODEL_PET64_NTSC;
-      else if (strcmp(var.value, "C64MODEL_ULTIMAX") == 0)modl=C64MODEL_ULTIMAX;
-      else if (strcmp(var.value, "C64MODEL_UNKNOWN") == 0)modl=C64MODEL_UNKNOWN;
-
-      if(retro_ui_finalized)
-        c64model_set(modl);
-      else RETROC64MODL=modl;
-
-   }
-
-#endif
 
 }
 
