@@ -148,17 +148,12 @@ int HandleExtension(char *path,char *ext)
 
 #include <ctype.h>
 
-//Args for experimental_cmdline
-static char ARGUV[64][1024];
-static unsigned char ARGUC=0;
-
 // Args for Core
 static char XARGV[64][1024];
 static const char* xargv_cmd[64];
 int PARAMCOUNT=0;
 
 extern int  skel_main(int argc, char *argv[]);
-void parse_cmdline( const char *argv );
 
 void Add_Option(const char* option)
 {
@@ -175,136 +170,63 @@ void Add_Option(const char* option)
 
 int pre_main(const char *argv)
 {
-   int i=0;
-   bool Only1Arg;
+	int i;
 
-   if (strlen(argv) > strlen("cmd"))
-   {
-      if( HandleExtension((char*)argv,"cmd") || HandleExtension((char*)argv,"CMD"))
-         i=loadcmdfile((char*)argv);
-   }
+	log_cb( RETRO_LOG_INFO, "pre_main: %s\n", argv );
+	int argv_len = strlen( argv );
 
-   if(i==1)
-   {
-      parse_cmdline(CMDFILE);
-      LOGI("Starting game from command line :%s\n",CMDFILE);
-   }
-   else
-      parse_cmdline(argv);
+	for (i = 0; i<64; i++)
+		xargv_cmd[i] = NULL;
 
-   Only1Arg = (strcmp(ARGUV[0],CORE_NAME) == 0) ? 0 : 1;
-
-   for (i = 0; i<64; i++)
-      xargv_cmd[i] = NULL;
-
-
-   if(Only1Arg)
-   {  Add_Option(CORE_NAME);
-      /*
-         if (strlen(RPATH) >= strlen("crt"))
-         if(!strcasecmp(&RPATH[strlen(RPATH)-strlen("crt")], "crt"))
-         Add_Option("-cartcrt");
-         */
+	Add_Option( CORE_NAME );
 
 #if defined(__VIC20__)
-     if (strlen(RPATH) >= strlen(".20"))
-       if (!strcasecmp(&RPATH[strlen(RPATH)-strlen(".20")], ".20"))
-	 Add_Option("-cart2");
 
-     if (strlen(RPATH) >= strlen(".40"))
-       if (!strcasecmp(&RPATH[strlen(RPATH)-strlen(".40")], ".40"))
-	 Add_Option("-cart4");
+	const char* p_ext = NULL;
+	for ( i = argv_len - 2; i >= 3; --i )
+	{
+		if ( argv[ i ] == '.' )
+		{
+			p_ext = argv + i;
+			break;
+		}
+	}
 
-     if (strlen(RPATH) >= strlen(".60"))
-       if (!strcasecmp(&RPATH[strlen(RPATH)-strlen(".60")], ".60"))
-	 Add_Option("-cart6");
+	if ( p_ext )
+	{
+		log_cb( RETRO_LOG_INFO, "content file ext: %s\n", p_ext );
 
-     if (strlen(RPATH) >= strlen(".a0"))
-       if (!strcasecmp(&RPATH[strlen(RPATH)-strlen(".a0")], ".a0"))
-	 Add_Option("-cartA");
+		if ( !strcasecmp( p_ext, ".20" ) )
+			Add_Option("-cart2");
+		else if ( !strcasecmp( p_ext, ".40" ) )
+			Add_Option("-cart4");
+		else if ( !strcasecmp( p_ext, ".60" ) )
+			Add_Option("-cart6");
+		else if ( !strcasecmp( p_ext, ".a0" ) )
+			Add_Option("-cartA");
+		else if ( !strcasecmp( p_ext, ".b0" ) )
+			Add_Option("-cartB");
+		else if ( !strcasecmp( p_ext, ".crt" ) )
+			Add_Option("-cartgeneric");
+	}
 
-     if (strlen(RPATH) >= strlen(".b0"))
-       if (!strcasecmp(&RPATH[strlen(RPATH)-strlen(".b0")], ".b0"))
-	 Add_Option("-cartB");
 #endif
 
-     Add_Option(RPATH/*ARGUV[0]*/);
-   }
-   else
-   { // Pass all cmdline args
-      for(i = 0; i < ARGUC; i++)
-         Add_Option(ARGUV[i]);
-   }
+	Add_Option( RPATH );
 
-   for (i = 0; i < PARAMCOUNT; i++)
-   {
-      xargv_cmd[i] = (char*)(XARGV[i]);
-      LOGI("%2d  %s\n",i,XARGV[i]);
-   }
 
-   skel_main(PARAMCOUNT,( char **)xargv_cmd);
+	// -- go!
 
-   xargv_cmd[PARAMCOUNT - 2] = NULL;
+	for ( i = 0; i < PARAMCOUNT; i++ )
+	{
+		xargv_cmd[i] = (char*)(XARGV[i]);
+	}
 
-   return 0;
-}
+	skel_main(PARAMCOUNT,( char **)xargv_cmd);
 
-void parse_cmdline(const char *argv)
-{
-   char *p,*p2,*start_of_word;
-   int c,c2;
-   static char buffer[512*4];
-   enum states { DULL, IN_WORD, IN_STRING } state = DULL;
+	xargv_cmd[PARAMCOUNT - 2] = NULL;
 
-   strcpy(buffer,argv);
-   strcat(buffer," \0");
-
-   for (p = buffer; *p != '\0'; p++)
-   {
-      c = (unsigned char) *p; /* convert to unsigned char for is* functions */
-      switch (state)
-      {
-         case DULL: /* not in a word, not in a double quoted string */
-            if (isspace(c)) /* still not in a word, so ignore this char */
-               continue;
-            /* not a space -- if it's a double quote we go to IN_STRING, else to IN_WORD */
-            if (c == '"')
-            {
-               state = IN_STRING;
-               start_of_word = p + 1; /* word starts at *next* char, not this one */
-               continue;
-            }
-            state = IN_WORD;
-            start_of_word = p; /* word starts here */
-            continue;
-         case IN_STRING:
-            /* we're in a double quoted string, so keep going until we hit a close " */
-            if (c == '"')
-            {
-               /* word goes from start_of_word to p-1 */
-               //... do something with the word ...
-               for (c2 = 0,p2 = start_of_word; p2 < p; p2++, c2++)
-                  ARGUV[ARGUC][c2] = (unsigned char) *p2;
-               ARGUC++;
-
-               state = DULL; /* back to "not in word, not in string" state */
-            }
-            continue; /* either still IN_STRING or we handled the end above */
-         case IN_WORD:
-            /* we're in a word, so keep going until we get to a space */
-            if (isspace(c))
-            {
-               /* word goes from start_of_word to p-1 */
-               //... do something with the word ...
-               for (c2 = 0,p2 = start_of_word; p2 <p; p2++,c2++)
-                  ARGUV[ARGUC][c2] = (unsigned char) *p2;
-               ARGUC++;
-
-               state = DULL; /* back to "not in word, not in string" state */
-            }
-            continue; /* either still IN_WORD or we handled the end above */
-      }
-   }
+	return 0;
 }
 
 long GetTicks(void) {
@@ -815,7 +737,7 @@ void retro_get_system_info(struct retro_system_info *info)
    info->valid_extensions = "tap|d64";
 #elif __VIC20__
    info->library_name     = "VICE VIC20";
-   info->valid_extensions = "tap|d64";
+   info->valid_extensions = "tap|d64|crt|20|40|60|80|a0|b0";
 #elif __X64__
    info->library_name     = "VICE C64";
    info->valid_extensions = "tap|d64";
