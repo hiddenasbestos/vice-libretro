@@ -8,6 +8,7 @@ extern BYTE mem_ram[PLUS4_RAM_SIZE];
 
 #ifdef __VIC20__
 #include "vic20mem.h"
+#include "vic20-resources.h"
 extern BYTE mem_ram[VIC20_RAM_SIZE];
 #endif // __VIC20__
 
@@ -65,7 +66,7 @@ int retroh=768;
 int lastW=1024;
 int lastH=768;
 
-extern int RETROTDE,RETRODRVTYPE,RETROSIDMODL,RETROC64MODL;
+extern int RETROTDE,RETRODRVTYPE,RETROSIDMODL,RETROC64MODL,RETROVIC20RAM;
 extern int retro_ui_finalized;
 extern void set_drive_type(int drive,int val);
 extern void set_truedrive_emulation(int val);
@@ -328,7 +329,7 @@ void Screen_SetFullUpdate(int scr)
 
 void retro_set_environment(retro_environment_t cb)
 {
-   static const struct retro_controller_description p1_controllers[] = 
+   static const struct retro_controller_description p1_controllers[] =
    {
       { "Joystick", RETRO_DEVICE_JOYPAD },
    };
@@ -352,6 +353,11 @@ void retro_set_environment(retro_environment_t cb)
 	  {
          "vice_VIC20Video",
          "Video Standard; PAL|NTSC",
+      },
+
+	  {
+         "vice_VIC20memory",
+         "Memory Expansion; 24KB|NONE|3KB|8KB|16KB|35KB",
       },
 
 #elif __PLUS4__
@@ -477,6 +483,70 @@ static void update_variables(void)
 		else
 		{
 			RETROC64MODL = modl;
+		}
+	}
+
+	// VIC 20 memory expansion
+
+	var.key = "vice_VIC20memory";
+	var.value = NULL;
+
+	if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+	{
+		int size = 24; // default
+
+		if (strcmp(var.value, "35KB") == 0)
+			size = 35;
+		else if (strcmp(var.value, "24KB") == 0)
+			size = 24;
+		else if (strcmp(var.value, "16KB") == 0)
+			size = 16;
+		if (strcmp(var.value, "8KB") == 0)
+			size = 8;
+		if (strcmp(var.value, "3KB") == 0)
+			size = 3;
+		if (strcmp(var.value, "NONE") == 0)
+			size = 0;
+
+		log_cb( RETRO_LOG_INFO, "Memory Expansion: %dKB\n", size );
+
+		switch ( size )
+		{
+
+		default:
+		case 0:
+			RETROVIC20RAM = 0;
+			break;
+
+		case 3:
+			RETROVIC20RAM = VIC_BLK0;
+			break;
+
+		case 8:
+			RETROVIC20RAM = VIC_BLK1;
+			break;
+
+		case 16:
+			RETROVIC20RAM = VIC_BLK1 | VIC_BLK2;
+			break;
+
+		case 24:
+			RETROVIC20RAM = VIC_BLK1 | VIC_BLK2 | VIC_BLK3;
+			break;
+
+		case 35:
+			RETROVIC20RAM = VIC_BLK0 | VIC_BLK1 | VIC_BLK2 | VIC_BLK3 | VIC_BLK5;
+			break;
+
+		};
+
+		if ( retro_ui_finalized )
+		{
+			resources_set_int("RamBlock0", ( RETROVIC20RAM & VIC_BLK0 ) ? 1:0);
+			resources_set_int("RamBlock1", ( RETROVIC20RAM & VIC_BLK1 ) ? 1:0);
+			resources_set_int("RamBlock2", ( RETROVIC20RAM & VIC_BLK2 ) ? 1:0);
+			resources_set_int("RamBlock3", ( RETROVIC20RAM & VIC_BLK3 ) ? 1:0);
+			resources_set_int("RamBlock5", ( RETROVIC20RAM & VIC_BLK5 ) ? 1:0);
 		}
 	}
 
@@ -704,11 +774,11 @@ void retro_init(void)
 #undef RETRO_DESCRIPTOR_BLOCK
 
    environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, &inputDescriptors);
-   
+
 #ifdef __X64__
    environ_cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE, &diskControl);
 #endif // __X64__
-   
+
    microSecCounter = 0;
 }
 
@@ -739,10 +809,10 @@ void retro_get_system_info(struct retro_system_info *info)
    info->valid_extensions = "tap|d64";
 #elif __VIC20__
    info->library_name     = "VICE VIC20";
-   info->valid_extensions = "20|40|60|a0|b0|d64|d71|d80|d81|d82|g64|g41|x64|t64|tap|prg|p00|crt|bin|zip|gz|d6z|d7z|d8z|g6z|g4z|x6z|cmd";
+   info->valid_extensions = "tap|d64";
 #elif __X64__
    info->library_name     = "VICE C64";
-   info->valid_extensions = "d64|d71|d80|d81|d82|g64|g41|x64|t64|tap|prg|p00|crt|bin|zip|gz|d6z|d7z|d8z|g6z|g4z|x6z|cmd";
+   info->valid_extensions = "tap|d64";
 #endif
    info->library_version  = "3.0" GIT_VERSION;
    info->need_fullpath    = true;
@@ -838,7 +908,7 @@ void retro_run(void)
 
 	if(want_quit)
 		retro_shutdown_core();
-	
+
 	microSecCounter += (1000000/50);
 }
 

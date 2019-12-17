@@ -34,6 +34,7 @@
 #include "userport_joystick.h"
 #if  defined(__VIC20__)
 #include "vic20model.h"
+#include "vic20mem.h"
 #elif defined(__PLUS4__)
 #include "plus4model.h"
 #elif  defined(__X128__)
@@ -44,7 +45,7 @@
 #include <string.h>
 #include <stdarg.h>
 
-int RETROTDE=0,RETRODRVTYPE=1542,RETROSIDMODL=0,RETROC64MODL=0;
+int RETROTDE=0,RETRODRVTYPE=1542,RETROSIDMODL=0,RETROC64MODL=0,RETROVIC20RAM=0;
 int retro_ui_finalized = 0;
 
 static const cmdline_option_t cmdline_options[] =
@@ -80,14 +81,14 @@ void ui_check_mouse_cursor(void)
 void ui_error(const char *format, ...)
 {
 
-   char text[512];	   	
-   va_list	ap;	
+   char text[512];
+   va_list	ap;
 
-   if (format == NULL)return;		
+   if (format == NULL)return;
 
-   va_start(ap,format );		
-   vsprintf(text, format, ap);	
-   va_end(ap);	
+   va_start(ap,format );
+   vsprintf(text, format, ap);
+   va_end(ap);
    fprintf(stderr, "ui_error: %s\n", text);
 }
 
@@ -140,8 +141,16 @@ int ui_init_finalize(void)
 
    sid_set_engine_model((RETROSIDMODL >> 8),  (RETROSIDMODL & 0xff));
 
-#if  defined(__VIC20__) 
-   vic20model_set(RETROC64MODL);
+#if  defined(__VIC20__)
+
+	vic20model_set(RETROC64MODL);
+
+	resources_set_int("RamBlock0", ( RETROVIC20RAM & VIC_BLK0 ) ? 1:0);
+	resources_set_int("RamBlock1", ( RETROVIC20RAM & VIC_BLK1 ) ? 1:0);
+	resources_set_int("RamBlock2", ( RETROVIC20RAM & VIC_BLK2 ) ? 1:0);
+	resources_set_int("RamBlock3", ( RETROVIC20RAM & VIC_BLK3 ) ? 1:0);
+	resources_set_int("RamBlock5", ( RETROVIC20RAM & VIC_BLK5 ) ? 1:0);
+
 #elif defined(__PLUS4__)
    plus4model_set(RETROC64MODL);
 #elif defined(__X128__)
