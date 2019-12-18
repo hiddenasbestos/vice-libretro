@@ -25,8 +25,6 @@ bool retro_load_ok = false;
 
 retro_log_printf_t log_cb;
 
-char RETRO_DIR[512];
-
 char DISKA_NAME[512]="\0";
 char DISKB_NAME[512]="\0";
 char TAPE_NAME[512]="\0";
@@ -173,7 +171,6 @@ int pre_main(const char *argv)
 	int i;
 
 	log_cb( RETRO_LOG_INFO, "pre_main: %s\n", argv );
-	int argv_len = strlen( argv );
 
 	for (i = 0; i<64; i++)
 		xargv_cmd[i] = NULL;
@@ -182,6 +179,11 @@ int pre_main(const char *argv)
 
 #if defined(__VIC20__)
 
+	/*Add_Option("-VICborders");
+	Add_Option("full");*/
+
+	// get content file extension.
+	const int argv_len = strlen( argv );
 	const char* p_ext = NULL;
 	for ( i = argv_len - 2; i >= 3; --i )
 	{
@@ -614,64 +616,63 @@ static void fallback_log(enum retro_log_level level, const char *fmt, ...)
 
 void retro_init(void)
 {
-   struct retro_log_callback log;
+	struct retro_log_callback log;
 
-   if (environ_cb(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &log))
-      log_cb = log.log;
-   else
-      log_cb = fallback_log;
+	if (environ_cb(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &log))
+		log_cb = log.log;
+	else
+		log_cb = fallback_log;
 
-   const char *system_dir = NULL;
+	const char *system_dir = NULL;
+	if (environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &system_dir) && system_dir)
+	{
+		// if defined, use the system directory
+		retro_system_directory=system_dir;
+	}
 
-   if (environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &system_dir) && system_dir)
-   {
-      // if defined, use the system directory
-      retro_system_directory=system_dir;
-   }
+	const char *content_dir = NULL;
+	if (environ_cb(RETRO_ENVIRONMENT_GET_CONTENT_DIRECTORY, &content_dir) && content_dir)
+	{
+		// if defined, use the system directory
+		retro_content_directory=content_dir;
+	}
 
-   const char *content_dir = NULL;
+	const char *save_dir = NULL;
+	if (environ_cb(RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY, &save_dir) && save_dir)
+	{
+		// If save directory is defined use it, otherwise use system directory
+		retro_save_directory = *save_dir ? save_dir : retro_system_directory;
+	}
+	else
+	{
+		// make retro_save_directory the same in case RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY is not implemented by the frontend
+		retro_save_directory = retro_system_directory;
+	}
 
-   if (environ_cb(RETRO_ENVIRONMENT_GET_CONTENT_DIRECTORY, &content_dir) && content_dir)
-   {
-      // if defined, use the system directory
-      retro_content_directory=content_dir;
-   }
+	if ( retro_save_directory == NULL )
+	{
+		sprintf( retro_system_data_directory, "%s", "." );
+	}
+	else
+	{
+		sprintf( retro_system_data_directory, "%s", retro_save_directory );
+	}
 
-   const char *save_dir = NULL;
+	log_cb( RETRO_LOG_INFO, "retro_system_data_directory: %s\n", retro_system_data_directory );
 
-   if (environ_cb(RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY, &save_dir) && save_dir)
-   {
-      // If save directory is defined use it, otherwise use system directory
-      retro_save_directory = *save_dir ? save_dir : retro_system_directory;
-   }
-   else
-   {
-      // make retro_save_directory the same in case RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY is not implemented by the frontend
-      retro_save_directory=retro_system_directory;
-   }
+	#ifdef FRONTEND_SUPPORTS_RGB565
+		enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_RGB565;
+	#else
+		enum retro_pixel_format fmt =RETRO_PIXEL_FORMAT_XRGB8888;
+	#endif
 
-   if(retro_system_directory==NULL)sprintf(RETRO_DIR, "%s",".");
-   else sprintf(RETRO_DIR, "%s", retro_system_directory);
+	if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt))
+	{
+		log_cb(RETRO_LOG_ERROR, "PIXEL FORMAT is not supported.\n");
+		exit(0);
+	}
 
-#if defined(__WIN32__)
-   sprintf(retro_system_data_directory, "%s\\data",RETRO_DIR);
-#else
-   sprintf(retro_system_data_directory, "%s/data",RETRO_DIR);
-#endif
-
-#ifdef FRONTEND_SUPPORTS_RGB565
-   enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_RGB565;
-#else
-   enum retro_pixel_format fmt =RETRO_PIXEL_FORMAT_XRGB8888;
-#endif
-
-   if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt))
-   {
-      log_cb(RETRO_LOG_ERROR, "PIXEL FORMAT is not supported.\n");
-      exit(0);
-   }
-
-   Retro_Screen = bmp;
+	Retro_Screen = bmp;
 
 #define RETRO_DESCRIPTOR_BLOCK( _user )                                            \
    { _user, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "A" },               \
@@ -737,7 +738,7 @@ void retro_get_system_info(struct retro_system_info *info)
    info->valid_extensions = "tap|d64";
 #elif __VIC20__
    info->library_name     = "VICE VIC20";
-   info->valid_extensions = "tap|d64|crt|20|40|60|80|a0|b0";
+   info->valid_extensions = "tap|d64|prg|crt|20|40|60|80|a0|b0";
 #elif __X64__
    info->library_name     = "VICE C64";
    info->valid_extensions = "tap|d64";

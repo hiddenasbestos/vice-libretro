@@ -119,23 +119,16 @@ int ui_init_finish(void)
 
 int ui_init_finalize(void)
 {
-   //FIXME
-
-   resources_set_int( "Mouse", 0);
-   resources_set_int( "Mousetype", 0);
-   resources_set_int( "Mouseport", 1);
-
-   resources_set_int( "CrtcFilter",0);
-   resources_set_int( "CrtcStretchVertical",0);
-
-   if(RETROTDE==1){
-	resources_set_int("DriveTrueEmulation", 1);
-	resources_set_int("VirtualDevices", 0);
-   }
-   else if(RETROTDE==0){
-	resources_set_int("DriveTrueEmulation", 0);
-	resources_set_int("VirtualDevices", 1);
-   }
+	if ( RETROTDE == 1 )
+	{
+		resources_set_int("DriveTrueEmulation", 1);
+		resources_set_int("VirtualDevices", 0);
+	}
+	else if( RETROTDE == 0 )
+	{
+		resources_set_int("DriveTrueEmulation", 0);
+		resources_set_int("VirtualDevices", 1);
+	}
 
    resources_set_int_sprintf("Drive%iType",RETRODRVTYPE , 8);
 
