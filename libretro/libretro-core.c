@@ -735,7 +735,7 @@ void retro_get_system_info(struct retro_system_info *info)
    memset(info, 0, sizeof(*info));
 #ifdef __PLUS4__
    info->library_name     = "VICE PLUS/4";
-   info->valid_extensions = "tap|d64";
+   info->valid_extensions = "tap|d64|prg";
 #elif __VIC20__
    info->library_name     = "VICE VIC20";
    info->valid_extensions = "tap|d64|prg|crt|20|40|60|80|a0|b0";
