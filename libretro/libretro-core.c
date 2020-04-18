@@ -6,6 +6,11 @@
 extern BYTE mem_ram[PLUS4_RAM_SIZE];
 #endif // __PLUS4__
 
+#ifdef __X64SC__
+#include "c64mem.h"
+extern BYTE mem_ram[C64_RAM_SIZE];
+#endif // __X64SC__
+
 #ifdef __VIC20__
 #include "vic20mem.h"
 #include "vic20-resources.h"
@@ -78,6 +83,8 @@ extern void set_truedrive_emulation(int val);
 #include "vic20model.h"
 #elif defined(__PLUS4__)
 #include "plus4model.h"
+#elif defined(__X64__) || defined(__X64SC__)
+#include "c64model.h"
 #elif defined(__X128__)
 #include "c128model.h"
 #endif
@@ -295,35 +302,19 @@ void retro_set_environment(retro_environment_t cb)
          "System; PLUS/4|Commodore 16",
       },
 
-#elif __X128__
+#elif defined( __X64__ ) || defined( __X64SC__ )
 
 	  {
+         "vice_C64Video",
+         "Video Standard; PAL|NTSC",
+      },
+      /*{
          "vice_SidModel",
-         "SidModel; 6581F|8580F|6581R|8580R|8580RD",
-      },
-
-	  {
-         "vice_C128Model",
-         "C128Model; C128MODEL_C128_PAL|C128MODEL_C128DCR_PAL|C128MODEL_C128_NTSC|C128MODEL_C128DCR_NTSC|C128MODEL_UNKNOWN",
-      },
-
-#elif __X64__
-
-      {
-         "vice_C64Model",
-         "C64Model; C64MODEL_C64_PAL|C64MODEL_C64C_PAL|C64MODEL_C64_OLD_PAL|C64MODEL_C64_NTSC|C64MODEL_C64C_NTSC|C64MODEL_C64_OLD_NTSC|C64MODEL_C64_PAL_N|C64MODEL_C64SX_PAL|C64MODEL_C64SX_NTSC|C64MODEL_C64_JAP|C64MODEL_C64_GS|C64MODEL_PET64_PAL|C64MODEL_PET64_NTSC|C64MODEL_ULTIMAX|C64MODEL_UNKNOWN",
-      },
-      {
-         "vice_SidModel",
-         "SidModel; 6581F|8580F|6581R|8580R|8580RD",
-      },
+         "SID Chip Type; 6581|8580",
+      },*/
       {
          "vice_Drive8Type",
-         "Drive8Type; 1541|1540|1542|1551|1570|1571|1573|1581|2000|4000|2031|2040|3040|4040|1001|8050|8250",
-      },
-      {
-         "vice_DriveTrueEmulation",
-         "DriveTrueEmulation; enabled|disabled",
+         "Floppy Drive Model; 1541|1571|1581",
       },
 
 #endif
@@ -346,11 +337,17 @@ void retro_set_environment(retro_environment_t cb)
 
 static void update_variables(void)
 {
+	int drive8type = 1541;
 	struct retro_variable var;
 
 #ifdef __PLUS4__
 
 	var.key = "vice_PLUS4Video";
+	var.value = NULL;
+
+#elif defined( __X64__ ) || defined ( __X64SC__ )
+
+	var.key = "vice_C64Video";
 	var.value = NULL;
 
 #elif __VIC20__
@@ -370,6 +367,8 @@ static void update_variables(void)
 #ifdef __PLUS4__
 
 	// PLUS/4 or C-16 ?  PAL or NTSC ?
+
+	drive8type = 1541; // 1551 also supported on PLUS/4, but no obvious benefits
 
 	var.key = "vice_PLUS4Model";
 	var.value = NULL;
@@ -393,7 +392,47 @@ static void update_variables(void)
 		}
 	}
 
+#elif defined( __X64__ ) || defined ( __X64SC__ )
+
+	// C64 model -> PAL/NTSC options.
+
+	drive8type = 1541;
+
+	{
+		int modl = is_pal_system ? C64MODEL_C64_PAL : C64MODEL_C64_NTSC;
+
+		if ( retro_ui_finalized )
+		{
+			c64model_set( modl );
+		}
+		else
+		{
+			RETROC64MODL = modl;
+		}
+	}
+
+	// C64 disk drive type
+
+	drive8type = 1541;
+
+	var.key = "vice_Drive8Type";
+	var.value = NULL;
+
+	if ( environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value )
+	{
+		if ( strcmp( var.value, "1571" ) == 0 )
+		{
+			drive8type = 1571;
+		}
+		else if ( strcmp( var.value, "1581" ) == 0 )
+		{
+			drive8type = 1581;
+		}
+	}
+
 #elif __VIC20__
+
+	drive8type = 1541;
 
 	// VIC 20 model -> just PAL/NTSC options.
 
@@ -483,16 +522,17 @@ static void update_variables(void)
 #endif
 
 	// Add a disk drive.
+	log_cb( RETRO_LOG_INFO, "Using model %d disk drive.\n", drive8type );
 
 	if ( retro_ui_finalized )
 	{
-		set_drive_type( 8, 1541 ); // 1551 also supported on PLUS/4.
+		set_drive_type( 8, drive8type );
 		set_truedrive_emulation( 1 );
 		resources_set_int( "VirtualDevices", 0 ); // <-- key to PRG support?
 	}
 	else
 	{
-		RETRODRVTYPE = 1541; // 1551 also supported on PLUS/4.
+		RETRODRVTYPE = drive8type;
 		RETROTDE = 1;
 	}
 
@@ -739,9 +779,9 @@ void retro_get_system_info(struct retro_system_info *info)
 #elif __VIC20__
    info->library_name     = "VICE VIC20";
    info->valid_extensions = "tap|d64|prg|crt|20|40|60|80|a0|b0";
-#elif __X64__
+#elif defined( __X64__ ) || defined( __X64SC__ )
    info->library_name     = "VICE C64";
-   info->valid_extensions = "tap|d64";
+   info->valid_extensions = "tap|prg|crt|d64|d71|d81";
 #endif
    info->library_version  = "3.0" GIT_VERSION;
    info->need_fullpath    = true;
@@ -937,6 +977,9 @@ size_t retro_get_memory_size(unsigned id)
 #elif __VIC20__
 	case RETRO_MEMORY_SYSTEM_RAM:
 		return VIC20_RAM_SIZE;
+#elif defined( __X64__ ) || defined( __X64SC__ )
+	case RETRO_MEMORY_SYSTEM_RAM:
+		return C64_RAM_SIZE;
 #endif
 
 	}
