@@ -1,5 +1,7 @@
 #include "libretro.h"
 #include "libretro-core.h"
+#include "datasette.h"
+#include "tape.h"
 
 #ifdef __PLUS4__
 #include "plus4mem.h"
@@ -557,6 +559,7 @@ void retro_shutdown_core(void)
 void retro_reset(void)
 {
    microSecCounter = 0;
+   datasette_control( DATASETTE_CONTROL_STOP );
    emu_reset();
 }
 
@@ -748,6 +751,29 @@ void retro_init(void)
    environ_cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE, &diskControl);
 #endif // __X64__
 
+#ifdef __PLUS4__
+   struct retro_tape_fileexts tape_info;
+   tape_info.extInsert = "tap";
+   tape_info.extCreate = "tap";
+   environ_cb(RETRO_ENVIRONMENT_SET_TAPE_FILEEXTS, &tape_info);
+#endif // __PLUS4__
+
+#ifdef __X64SC__
+   struct retro_tape_fileexts tape_info;
+   tape_info.extInsert = "tap|t64";
+   tape_info.extCreate = "tap";
+   environ_cb(RETRO_ENVIRONMENT_SET_TAPE_FILEEXTS, &tape_info);
+#endif // __X64SC__
+
+#ifdef __VIC20__
+   struct retro_tape_fileexts tape_info;
+   tape_info.extInsert = "tap";
+   tape_info.extCreate = "tap";
+   environ_cb(RETRO_ENVIRONMENT_SET_TAPE_FILEEXTS, &tape_info);
+#endif // __VIC20__
+
+
+
    microSecCounter = 0;
 }
 
@@ -781,7 +807,7 @@ void retro_get_system_info(struct retro_system_info *info)
    info->valid_extensions = "tap|d64|prg|crt|20|40|60|80|a0|b0";
 #elif defined( __X64__ ) || defined( __X64SC__ )
    info->library_name     = "VICE C64";
-   info->valid_extensions = "tap|prg|crt|d64|d71|d81";
+   info->valid_extensions = "tap|t64|prg|crt|d64|d71|d81";
 #endif
    info->library_version  = "3.0" GIT_VERSION;
    info->need_fullpath    = true;
@@ -996,3 +1022,78 @@ void retro_cheat_set(unsigned index, bool enabled, const char *code)
    (void)code;
 }
 
+bool retro_tape_command( unsigned command, void* param )
+{
+	/*log_cb(RETRO_LOG_INFO, "retro_tape_command. Got command %d.\n", command );*/
+
+	bool result;
+	result = false;
+
+	switch ( command )
+	{
+
+	case RETROTAPE_COMMAND_PLAY:
+		datasette_control( DATASETTE_CONTROL_START );
+		result = true;
+		break;
+
+	case RETROTAPE_COMMAND_RECORD:
+		datasette_control( DATASETTE_CONTROL_START );
+		datasette_control( DATASETTE_CONTROL_RECORD );
+		result = true;
+		break;
+
+	case RETROTAPE_COMMAND_STOP:
+		datasette_control( DATASETTE_CONTROL_STOP );
+		result = true;
+		break;
+
+	case RETROTAPE_COMMAND_REWIND:
+		datasette_control( DATASETTE_CONTROL_REWIND );
+		result = true;
+		break;
+
+	case RETROTAPE_COMMAND_FFWD:
+		datasette_control( DATASETTE_CONTROL_FORWARD );
+		result = true;
+		break;
+
+	case RETROTAPE_COMMAND_RESETCNT:
+		datasette_control( DATASETTE_CONTROL_RESET_COUNTER );
+		result = true;
+		break;
+
+	case RETROTAPE_COMMAND_EJECT:
+		tape_image_detach( 1 );
+		result = true;
+		break;
+
+	case RETROTAPE_COMMAND_INSERT:
+		{
+			int r;
+			r = tape_image_attach( 1, *(const char**)param );
+			result = ( r == 0 ); // 0 = OK
+		}
+		break;
+
+	case RETROTAPE_COMMAND_CREATE:
+		{
+			int r;
+			r = tape_image_create( *(const char**)param, TAPE_TYPE_TAP );
+
+			if ( r == 0 )
+			{
+				r = tape_image_attach( 1, *(const char**)param );
+				result = ( r == 0 ); // 0 = OK
+			}
+		}
+		break;
+
+	default:
+		log_cb(RETRO_LOG_ERROR, "retro_tape_command. Got unknown command %d.\n", command );
+		break;
+
+	}
+
+	return result;
+}

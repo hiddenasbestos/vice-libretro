@@ -84,7 +84,12 @@ int tape_image_open(tape_image_t *tape_image)
 
 int tape_image_create(const char *name, unsigned int type)
 {
-    return tap_create(name);
+    switch (type) {
+        case TAPE_TYPE_T64:
+            return -1;
+        case TAPE_TYPE_TAP:
+            return tap_create(name);
+    }
 }
 
 /* ------------------------------------------------------------------------- */

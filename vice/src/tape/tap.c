@@ -205,7 +205,11 @@ int tap_create(const char *name)
     }
 
     /* create an empty tap */
+#ifdef __PLUS4__
+    strcpy((char *)&block[TAP_HDR_MAGIC_OFFSET], "C16-TAPE-RAW");
+#else // others
     strcpy((char *)&block[TAP_HDR_MAGIC_OFFSET], "C64-TAPE-RAW");
+#endif //
 
     block[TAP_HDR_VERSION] = 1;
 

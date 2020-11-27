@@ -74,21 +74,108 @@ static int tape_counter = 0;
 static int tape_enabled = 0;
 static int tape_motor = 0;
 static int tape_control = 0;
+static int tape_has_image = 0;
 
-static void retro_set_tape_counter(void)
+static void retro_set_tape_status(void)
 {
-	// Tell front-end
-	if ( environ_cb )
+	enum retro_tape_state state;
+
+	if ( tape_enabled == 0 || tape_has_image == 0 )
 	{
-		if ( tape_enabled )
+		state = RETROTAPE_STATE_EMPTY;
+	}
+	else
+	{
+		if ( tape_motor )
 		{
-			environ_cb( RETRO_ENVIRONMENT_SET_TAPE_COUNTER, &tape_counter );
+			switch ( tape_control )
+			{
+
+			default:
+				state = RETROTAPE_STATE_STOPPED;
+				break;
+
+			case 1:
+				state = RETROTAPE_STATE_PLAYING;
+				break;
+
+			case 2:
+				state = RETROTAPE_STATE_FFWDING;
+				break;
+
+			case 3:
+				state = RETROTAPE_STATE_REWINDING;
+				break;
+
+			case 4:
+				state = RETROTAPE_STATE_RECORDING;
+				break;
+
+			};
 		}
 		else
 		{
-			int hide = -1;
-			environ_cb( RETRO_ENVIRONMENT_SET_TAPE_COUNTER, &hide );
+			if ( tape_control == 1 )
+			{
+				state = RETROTAPE_STATE_HOLD;
+			}
+			else
+			{
+				state = RETROTAPE_STATE_STOPPED;
+			}
 		}
+	}
+
+#if 0
+
+	const char* p_state = "error";
+	switch ( state )
+	{
+
+	case RETROTAPE_STATE_ABSENT:
+		p_state = "RETROTAPE_STATE_ABSENT";
+		break;
+
+	case RETROTAPE_STATE_EMPTY:
+		p_state = "RETROTAPE_STATE_EMPTY";
+		break;
+
+	case RETROTAPE_STATE_STOPPED:
+		p_state = "RETROTAPE_STATE_STOPPED";
+		break;
+
+	case RETROTAPE_STATE_PLAYING:
+		p_state = "RETROTAPE_STATE_PLAYING";
+		break;
+
+	case RETROTAPE_STATE_HOLD:
+		p_state = "RETROTAPE_STATE_HOLD";
+		break;
+
+	case RETROTAPE_STATE_RECORDING:
+		p_state = "RETROTAPE_STATE_RECORDING";
+		break;
+
+	case RETROTAPE_STATE_REWINDING:
+		p_state = "RETROTAPE_STATE_REWINDING";
+		break;
+
+	case RETROTAPE_STATE_FFWDING:
+		p_state = "RETROTAPE_STATE_FFWDING";
+		break;
+
+	}
+
+	log_cb( RETRO_LOG_INFO, "retro_set_tape_status: %s (%d,%d,%d,%d,%d)\n",
+		p_state, tape_enabled, tape_has_image, tape_control, tape_motor, tape_enabled ? tape_counter : -1 );
+
+#endif
+
+	// Tell front-end
+	if ( environ_cb )
+	{
+		environ_cb( RETRO_ENVIRONMENT_SET_TAPE_STATE, &state );
+		environ_cb( RETRO_ENVIRONMENT_SET_TAPE_COUNTER, &tape_counter );
 	}
 }
 
@@ -122,7 +209,7 @@ void ui_enable_drive_status(ui_drive_enable_t state, int *drive_led_color)
 {
     int drive_number;
     int drive_state = (int)state;
-	  
+
 	for ( drive_number = 0; drive_number < 4; ++drive_number )
 	{
 		int enable = ( drive_state & 1 ) ? 1 : 0;
@@ -132,7 +219,7 @@ void ui_enable_drive_status(ui_drive_enable_t state, int *drive_led_color)
 			 drive_enable[ drive_number ] = enable;
 			 drive_track[ drive_number ] = -1;
 		}
-        
+
 		drive_state >>= 1;
     }
 }
@@ -187,28 +274,34 @@ void ui_set_tape_status(int tape_status)
 {
     tape_enabled = tape_status;
 
-    retro_set_tape_counter();
+	/*log_cb( RETRO_LOG_INFO, "ui_set_tape_status = %d\n", tape_status );*/
+
+    retro_set_tape_status();
 }
 
 void ui_display_tape_motor_status(int motor)
 {
     tape_motor = motor;
 
-    retro_set_tape_counter();
+	/*log_cb( RETRO_LOG_INFO, "ui_display_tape_motor_status = %d\n", motor );*/
+
+    retro_set_tape_status();
 }
 
 void ui_display_tape_control_status(int control)
 {
     tape_control = control;
 
-    retro_set_tape_counter();
+	/*log_cb( RETRO_LOG_INFO, "ui_display_tape_control_status = %d\n", control );*/
+
+    retro_set_tape_status();
 }
 
 void ui_display_tape_counter(int counter)
 {
     if (tape_counter != counter)
 	{
-        retro_set_tape_counter();
+        retro_set_tape_status();
     }
 
     tape_counter = counter;
@@ -219,11 +312,25 @@ void ui_display_tape_current_image(const char *image)
 #ifdef SDL_DEBUG
     fprintf(stderr, "%s: %s\n", __func__, image);
 #endif
+
+	tape_has_image = ( image && image[ 0 ] != 0 );
+
+	log_cb( RETRO_LOG_INFO, "ui_display_tape_current_image = %s\n", image );
+
+	// notify the front-end
+	if ( environ_cb )
+	{
+		environ_cb( RETRO_ENVIRONMENT_SET_TAPE_FILEPATH, &image );
+	}
+
+    retro_set_tape_status();
 }
 
 /* Recording UI */
 void ui_display_playback(int playback_status, char *version)
 {
+	log_cb( RETRO_LOG_INFO, "ui_display_playback = %d\n", playback_status );
+
 #ifdef SDL_DEBUG
     fprintf(stderr, "%s: %i, \"%s\"\n", __func__, playback_status, version);
 #endif
@@ -231,6 +338,8 @@ void ui_display_playback(int playback_status, char *version)
 
 void ui_display_recording(int recording_status)
 {
+	log_cb( RETRO_LOG_INFO, "ui_display_recording = %d\n", recording_status );
+
 #ifdef SDL_DEBUG
     fprintf(stderr, "%s: %i\n", __func__, recording_status);
 #endif

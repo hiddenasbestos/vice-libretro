@@ -473,6 +473,45 @@ enum retro_mod
    RETROKMOD_DUMMY = INT_MAX /* Ensure sizeof(enum) == sizeof(int) */
 };
 
+enum retro_tape_state
+{
+   RETROTAPE_STATE_ABSENT     = 0x0000, // not present, never will be.
+   RETROTAPE_STATE_EMPTY      = 0x0001, // device present, but empty.
+   RETROTAPE_STATE_STOPPED    = 0x0002, // cassette is inserted but stopped
+   RETROTAPE_STATE_PLAYING    = 0x0003, // playing
+   RETROTAPE_STATE_HOLD	      = 0x0004, // playing, but the CPU stopped the motor.
+   RETROTAPE_STATE_RECORDING  = 0x0005, // recording
+   RETROTAPE_STATE_REWINDING  = 0x0006, // rewinding
+   RETROTAPE_STATE_FFWDING    = 0x0007, // fast-forwarding
+
+   RETROTAPE_STATE_DUMMY = INT_MAX /* Ensure sizeof(enum) == sizeof(int) */
+};
+
+enum retro_tape_commands
+{
+   RETROTAPE_COMMAND_RECORD    = 0x0000, // record (+ play implied)
+   RETROTAPE_COMMAND_PLAY      = 0x0001, // play
+   RETROTAPE_COMMAND_STOP      = 0x0002, // stop
+   RETROTAPE_COMMAND_REWIND    = 0x0003, // rewind
+   RETROTAPE_COMMAND_FFWD      = 0x0004, // fast-forward
+   RETROTAPE_COMMAND_EJECT     = 0x0005, // eject
+   RETROTAPE_COMMAND_RESETCNT  = 0x0006, // reset the tape counter.
+   RETROTAPE_COMMAND_INSERT    = 0x0007, // insert a tape image, param: (const char*)
+   RETROTAPE_COMMAND_CREATE    = 0x0008, // create a tape image, param: (const char*)
+
+   RETROTAPE_COMMAND_DUMMY = INT_MAX /* Ensure sizeof(enum) == sizeof(int) */
+};
+
+struct retro_tape_fileexts
+{
+   /* file extensions for RETROTAPE_COMMAND_INSERT */
+   const char *extInsert;
+
+   /* file extensions for RETROTAPE_COMMAND_CREATE */
+   const char *extCreate;
+};
+
+
 /* If set, this call is not part of the public libretro API yet. It can
  * change or be removed at any time. */
 #define RETRO_ENVIRONMENT_EXPERIMENTAL 0x10000
@@ -579,10 +618,25 @@ enum retro_mod
                                             * Tells the frontend what the current value of the tape counter
 											* is. Passing a negative value means there is no tape value.
                                             */
+#define RETRO_ENVIRONMENT_SET_TAPE_STATE 1015
+                                           /* const int * --
+                                            * Tells the frontend the current state of the cassette player.
+                                            * A value from enum retro_tape_state
+                                            */
+#define RETRO_ENVIRONMENT_SET_TAPE_FILEPATH 1016
+                                           /* const char ** --
+                                            * Tells the frontend the current image file in the cassette player.
+                                            * An empty string means the player is empty.
+                                            */
+#define RETRO_ENVIRONMENT_SET_TAPE_FILEEXTS 1017
+                                           /* struct retro_tape_fileexts * --
+                                            * Tells the frontend the file extensions we support for tape images.
+											* Used in conjunction with RETROTAPE_COMMAND_INSERT.
+                                            */
 #define RETRO_ENVIRONMENT_DISK_DRIVE_LED_BLINK 1014
                                            /* const int * --
                                             * Tells the frontend to blink an activity light for the numbered
-											* disk drive.
+											* disk drive. Pass -1 to turn off all lights.
                                             */
 // DWD END
 #define RETRO_ENVIRONMENT_SET_HW_RENDER 14
@@ -612,8 +666,11 @@ enum retro_mod
                                             * GET_VARIABLE.
                                             * This allows the frontend to present these variables to
                                             * a user dynamically.
-                                            * This should be called as early as possible (ideally in
-                                            * retro_set_environment).
+                                            * This should be called the first time as early as
+                                            * possible (ideally in retro_set_environment).
+                                            * Afterward it may be called again for the core to communicate
+                                            * updated options to the frontend, but the number of core
+                                            * options must not change from the number in the initial call.
                                             *
                                             * 'data' points to an array of retro_variable structs
                                             * terminated by a { NULL, NULL } element.
@@ -2397,6 +2454,9 @@ RETRO_API unsigned retro_get_region(void);
 /* Gets region of memory. */
 RETRO_API void *retro_get_memory_data(unsigned id);
 RETRO_API size_t retro_get_memory_size(unsigned id);
+
+/* Sends cassette commands to emulator. See: enum retro_tape_commands */
+RETRO_API bool retro_tape_command(unsigned command, void* param);
 
 #ifdef __cplusplus
 }

@@ -237,7 +237,7 @@ static const resource_int_t resources_int[] = {
     { "Datasette", 1, RES_EVENT_SAME, NULL,
       &datasette_enable,
       set_datasette_enable, NULL },
-    { "DatasetteResetWithCPU", 1, RES_EVENT_SAME, NULL,
+    { "DatasetteResetWithCPU", 0, RES_EVENT_SAME, NULL,
       &reset_datasette_with_maincpu,
       set_reset_datasette_with_maincpu, NULL },
     { "DatasetteZeroGapDelay", 20000, RES_EVENT_SAME, NULL,
@@ -591,7 +591,7 @@ static void datasette_read_bit(CLOCK offset, void *data)
     alarm_unset(datasette_alarm);
     datasette_alarm_pending = 0;
 
-    DBG(("datasette_read_bit(motor:%d) %d>=%d (image present:%s)", datasette_motor, maincpu_clk, motor_stop_clk, current_image ? "yes" : "no"));
+//    DBG(("datasette_read_bit(motor:%d) %d>=%d (image present:%s)", datasette_motor, maincpu_clk, motor_stop_clk, current_image ? "yes" : "no"));
 
     /* check for delay of motor stop */
     if (motor_stop_clk > 0 && maincpu_clk >= motor_stop_clk) {
@@ -599,7 +599,7 @@ static void datasette_read_bit(CLOCK offset, void *data)
         ui_display_tape_motor_status(0);
         datasette_motor = 0;
     }
-    DBG(("datasette_read_bit(motor:%d)", datasette_motor));
+//    DBG(("datasette_read_bit(motor:%d)", datasette_motor));
 
     if (!datasette_motor) {
         return;
@@ -917,7 +917,9 @@ static void datasette_control_internal(int command)
                         tapeport_set_tape_sense(1, datasette_device.id);
                     }
                     last_write_clk = (CLOCK)0;
-                }
+                } else {
+		            log_error(datasette_log, "Current image is read-only.");
+				}
                 break;
         }
         ui_display_tape_control_status(current_image->mode);
