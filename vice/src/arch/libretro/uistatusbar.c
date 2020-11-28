@@ -252,7 +252,7 @@ void ui_display_drive_led(int drive_number, unsigned int pwm1, unsigned int led_
     fprintf(stderr, "%s: drive %i, pwm1 = %i, led_pwm2 = %u\n", __func__, drive_number, pwm1, led_pwm2);
 #endif
 
-	// log_cb( RETRO_LOG_INFO, "PWM:%i;%u; ", pwm1, led_pwm2 );
+	/*log_cb( RETRO_LOG_INFO, "PWM:%i,%u,%u; ", drive_number, pwm1, led_pwm2 );*/
 
 	// Track change?
 	if ( drive_enable[ drive_number ] && ( pwm1 > 666 ) )
@@ -266,6 +266,9 @@ void ui_display_drive_current_image(unsigned int drive_number, const char *image
 #ifdef SDL_DEBUG
     fprintf(stderr, "%s\n", __func__);
 #endif
+
+	/*log_cb( RETRO_LOG_INFO, "ui_display_drive_current_image = %d,%s\n", drive_number, image );*/
+
 }
 
 /* Tape related UI */

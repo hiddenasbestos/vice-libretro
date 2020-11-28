@@ -45,7 +45,7 @@
 #include <string.h>
 #include <stdarg.h>
 
-int RETROTDE=0,RETRODRVTYPE=1542,RETROSIDMODL=0,RETROC64MODL=0,RETROVIC20RAM=0;
+int RETROTDE=0,RETRODRVTYPE=1542,RETROSIDMODL=0,RETROC64MODL=0,RETROVIC20RAM=0,RETRO_BORDERS=1;
 int retro_ui_finalized = 0;
 
 static const cmdline_option_t cmdline_options[] =
@@ -145,11 +145,21 @@ int ui_init_finalize(void)
 	resources_set_int("RamBlock5", ( RETROVIC20RAM & VIC_BLK5 ) ? 1:0);
 
 #elif defined(__PLUS4__)
-   plus4model_set(RETROC64MODL);
+
+	plus4model_set(RETROC64MODL);
+
+	resources_set_int( "TEDBorderMode", RETRO_BORDERS );
+
 #elif defined(__X128__)
+
    c128model_set(RETROC64MODL);
+
 #else
-   c64model_set(RETROC64MODL);
+
+	c64model_set(RETROC64MODL);
+
+	resources_set_int( "VICBorderMode", RETRO_BORDERS );
+
 #endif
 
    retro_ui_finalized = 1;

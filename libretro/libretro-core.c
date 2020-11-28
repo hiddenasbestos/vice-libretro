@@ -71,7 +71,7 @@ int retroh=768;
 int lastW=1024;
 int lastH=768;
 
-extern int RETROTDE,RETRODRVTYPE,RETROSIDMODL,RETROC64MODL,RETROVIC20RAM;
+extern int RETROTDE,RETRODRVTYPE,RETROSIDMODL,RETROC64MODL,RETROVIC20RAM,RETRO_BORDERS;
 extern int retro_ui_finalized;
 extern void set_drive_type(int drive,int val);
 extern void set_truedrive_emulation(int val);
@@ -296,12 +296,16 @@ void retro_set_environment(retro_environment_t cb)
 #elif __PLUS4__
 
 	  {
+         "vice_PLUS4Model",
+         "System; PLUS/4|Commodore 16",
+      },
+	  {
          "vice_PLUS4Video",
          "Video Standard; PAL|NTSC",
       },
 	  {
-         "vice_PLUS4Model",
-         "System; PLUS/4|Commodore 16",
+         "vice_PLUS4Borders",
+         "Border Size; Normal|Full|Disabled",
       },
 
 #elif defined( __X64__ ) || defined( __X64SC__ )
@@ -309,6 +313,10 @@ void retro_set_environment(retro_environment_t cb)
 	  {
          "vice_C64Video",
          "Video Standard; PAL|NTSC",
+      },
+	  {
+         "vice_C64Borders",
+         "Border Size; Normal|Full|Disabled",
       },
       /*{
          "vice_SidModel",
@@ -394,6 +402,36 @@ static void update_variables(void)
 		}
 	}
 
+	var.key = "vice_PLUS4Borders";
+	var.value = NULL;
+
+	if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+	{
+		int size = 0; // default: normal
+
+		if ( !strcmp( var.value, "Normal" ) )
+		{
+			size = 0; // normal
+		}
+		else if ( !strcmp( var.value, "Full" ) )
+		{
+			size = 1; // full
+		}
+		else if ( !strcmp( var.value, "Disabled" ) )
+		{
+			size = 3; // none
+		}
+
+		if ( retro_ui_finalized )
+		{
+			resources_set_int( "TEDBorderMode", size );
+		}
+		else
+		{
+			RETRO_BORDERS = size;
+		}
+	}
+
 #elif defined( __X64__ ) || defined ( __X64SC__ )
 
 	// C64 model -> PAL/NTSC options.
@@ -429,6 +467,36 @@ static void update_variables(void)
 		else if ( strcmp( var.value, "1581" ) == 0 )
 		{
 			drive8type = 1581;
+		}
+	}
+
+	var.key = "vice_PLUS4Borders";
+	var.value = NULL;
+
+	if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+	{
+		int size = 0; // default: normal
+
+		if ( !strcmp( var.value, "Normal" ) )
+		{
+			size = 0; // normal
+		}
+		else if ( !strcmp( var.value, "Full" ) )
+		{
+			size = 1; // full
+		}
+		else if ( !strcmp( var.value, "Disabled" ) )
+		{
+			size = 3; // none
+		}
+
+		if ( retro_ui_finalized )
+		{
+			resources_set_int( "VICBorderMode", size );
+		}
+		else
+		{
+			RETRO_BORDERS = size;
 		}
 	}
 

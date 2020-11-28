@@ -210,7 +210,6 @@ void c64ui_set_keyarr(int status)
 int c64ui_init(void)
 {
     machine_ui_done = 1;
-    // retro_ui_finalized = 1;
     return 0;
 }
 
@@ -267,7 +266,7 @@ int vic20ui_init(void)
 {
      return 0;
 }
-  
+
 int vic20ui_shutdown(void)
 {
 
