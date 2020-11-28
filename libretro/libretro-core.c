@@ -641,23 +641,41 @@ static struct DiskImage diskImage[80];
 static bool ejected = false;
 #include <attach.h>
 
-static bool retro_set_eject_state(bool ejected) {
-    log_cb(RETRO_LOG_INFO, "EJECT %d", (int)ejected);
-    if(ejected)
-        file_system_detach_disk(8);
+static bool retro_set_eject_state( bool eject_request )
+{
+	bool result;
+
+    if ( eject_request )
+    {
+		file_system_detach_disk( 8 );
+        log_cb( RETRO_LOG_INFO, "EJECT (device 8)\n" );
+        result = true;
+        ejected = true;
+	}
     else
-        file_system_attach_disk(8, diskImage[diskIndex].fname);
+    {
+		int r;
+		r = file_system_attach_disk( 8, diskImage[ diskIndex ].fname );
+        log_cb( RETRO_LOG_INFO, "INSERTED: %s ; r=%d\n", diskImage[ diskIndex ].fname, r );
+        result = ( r == 0 );
+
+        ejected = !result;
+	}
+
+	return result;
 }
 
 /* Gets current eject state. The initial state is 'not ejected'. */
-static bool retro_get_eject_state(void) {
+static bool retro_get_eject_state(void)
+{
     return ejected;
 }
 
 /* Gets current disk index. First disk is index 0.
  * If return value is >= get_num_images(), no disk is currently inserted.
  */
-static unsigned retro_get_image_index(void) {
+static unsigned retro_get_image_index(void)
+{
     return diskIndex;
 }
 
@@ -665,12 +683,14 @@ static unsigned retro_get_image_index(void) {
  * The implementation supports setting "no disk" by using an
  * index >= get_num_images().
  */
-static bool retro_set_image_index(unsigned index) {
+static bool retro_set_image_index(unsigned index)
+{
     diskIndex = index;
 }
 
 /* Gets total number of images which are available to use. */
-static unsigned retro_get_num_images(void) {
+static unsigned retro_get_num_images(void)
+{
     return diskCount;
 }
 
@@ -688,23 +708,30 @@ static unsigned retro_get_num_images(void) {
  * Index 1 will be removed, and the new index is 3.
  */
 static bool retro_replace_image_index(unsigned index,
-      const struct retro_game_info *info) {
+      const struct retro_game_info *info)
+{
     if(diskImage[index].fname)
         free(diskImage[index].fname);
-    if(info == NULL) {
+
+    if(info == NULL)
+    {
         memcpy(&diskImage[index], &diskImage[index+1], sizeof(struct DiskImage)*(diskCount-index-1));
         diskCount--;
         if(diskIndex > 0)
             diskIndex--;
-    } else
-    diskImage[index].fname = strdup(info->path);
+    }
+    else
+    {
+	    diskImage[index].fname = strdup(info->path);
+	}
 }
 
 /* Adds a new valid index (get_num_images()) to the internal disk list.
  * This will increment subsequent return values from get_num_images() by 1.
  * This image index cannot be used until a disk image has been set
  * with replace_image_index. */
-static bool retro_add_image_index(void) {
+static bool retro_add_image_index(void)
+{
     diskImage[diskCount].fname = NULL;
     diskCount++;
     return true;
@@ -815,29 +842,30 @@ void retro_init(void)
 
    environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, &inputDescriptors);
 
-#ifdef __X64__
    environ_cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE, &diskControl);
-#endif // __X64__
 
 #ifdef __PLUS4__
-   struct retro_tape_fileexts tape_info;
-   tape_info.extInsert = "tap";
-   tape_info.extCreate = "tap";
-   environ_cb(RETRO_ENVIRONMENT_SET_TAPE_FILEEXTS, &tape_info);
+   struct retro_content_fileexts tape_info;
+   tape_info.TapeInsert = "tap";
+   tape_info.TapeCreate = "tap";
+   tape_info.DiskControl = "d64";
+   environ_cb(RETRO_ENVIRONMENT_SET_CONTENT_FILEEXTS, &tape_info);
 #endif // __PLUS4__
 
 #ifdef __X64SC__
-   struct retro_tape_fileexts tape_info;
-   tape_info.extInsert = "tap|t64";
-   tape_info.extCreate = "tap";
-   environ_cb(RETRO_ENVIRONMENT_SET_TAPE_FILEEXTS, &tape_info);
+   struct retro_content_fileexts tape_info;
+   tape_info.TapeInsert = "tap|t64";
+   tape_info.TapeCreate = "tap";
+   tape_info.DiskControl = "d64|d71|d81";
+   environ_cb(RETRO_ENVIRONMENT_SET_CONTENT_FILEEXTS, &tape_info);
 #endif // __X64SC__
 
 #ifdef __VIC20__
-   struct retro_tape_fileexts tape_info;
-   tape_info.extInsert = "tap";
-   tape_info.extCreate = "tap";
-   environ_cb(RETRO_ENVIRONMENT_SET_TAPE_FILEEXTS, &tape_info);
+   struct retro_content_fileexts tape_info;
+   tape_info.TapeInsert = "tap";
+   tape_info.TapeCreate = "tap";
+   tape_info.DiskControl = "d64";
+   environ_cb(RETRO_ENVIRONMENT_SET_CONTENT_FILEEXTS, &tape_info);
 #endif // __VIC20__
 
 
@@ -869,13 +897,13 @@ void retro_get_system_info(struct retro_system_info *info)
    memset(info, 0, sizeof(*info));
 #ifdef __PLUS4__
    info->library_name     = "VICE PLUS/4";
-   info->valid_extensions = "tap|d64|prg";
+   info->valid_extensions = "tap|d64|prg|m3u";
 #elif __VIC20__
    info->library_name     = "VICE VIC20";
-   info->valid_extensions = "tap|d64|prg|crt|20|40|60|80|a0|b0";
+   info->valid_extensions = "tap|d64|prg|crt|20|40|60|80|a0|b0|m3u";
 #elif defined( __X64__ ) || defined( __X64SC__ )
    info->library_name     = "VICE C64";
-   info->valid_extensions = "tap|t64|prg|crt|d64|d71|d81";
+   info->valid_extensions = "tap|t64|prg|crt|d64|d71|d81|m3u";
 #endif
    info->library_version  = "3.0" GIT_VERSION;
    info->need_fullpath    = true;

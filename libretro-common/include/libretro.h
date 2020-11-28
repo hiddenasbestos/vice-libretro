@@ -502,13 +502,16 @@ enum retro_tape_commands
    RETROTAPE_COMMAND_DUMMY = INT_MAX /* Ensure sizeof(enum) == sizeof(int) */
 };
 
-struct retro_tape_fileexts
+struct retro_content_fileexts
 {
    /* file extensions for RETROTAPE_COMMAND_INSERT */
-   const char *extInsert;
+   const char *TapeInsert;
 
    /* file extensions for RETROTAPE_COMMAND_CREATE */
-   const char *extCreate;
+   const char *TapeCreate;
+
+   /* file extensions for RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE */
+   const char *DiskControl;
 };
 
 
@@ -628,10 +631,11 @@ struct retro_tape_fileexts
                                             * Tells the frontend the current image file in the cassette player.
                                             * An empty string means the player is empty.
                                             */
-#define RETRO_ENVIRONMENT_SET_TAPE_FILEEXTS 1017
-                                           /* struct retro_tape_fileexts * --
-                                            * Tells the frontend the file extensions we support for tape images.
-											* Used in conjunction with RETROTAPE_COMMAND_INSERT.
+#define RETRO_ENVIRONMENT_SET_CONTENT_FILEEXTS 1017
+                                           /* struct retro_content_fileexts * --
+                                            * Tells the frontend the file extensions we support for images in
+											* different operations. E.g. what formats can we create tape images in.
+											* What formats can we load disk images in?
                                             */
 #define RETRO_ENVIRONMENT_DISK_DRIVE_LED_BLINK 1014
                                            /* const int * --
