@@ -447,7 +447,7 @@ static void update_variables(void)
 		}
 	}
 
-	var.key = "vice_PLUS4Borders";
+	var.key = "vice_C64Borders";
 	var.value = NULL;
 
 	if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
@@ -469,7 +469,7 @@ static void update_variables(void)
 
 		if ( retro_ui_finalized )
 		{
-			resources_set_int( "VICBorderMode", size );
+			resources_set_int( "VICIIBorderMode", size );
 		}
 		else
 		{

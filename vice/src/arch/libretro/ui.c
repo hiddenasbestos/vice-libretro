@@ -158,7 +158,7 @@ int ui_init_finalize(void)
 
 	c64model_set(RETROC64MODL);
 
-	resources_set_int( "VICBorderMode", RETRO_BORDERS );
+	resources_set_int( "VICIIBorderMode", RETRO_BORDERS );
 
 #endif
 
