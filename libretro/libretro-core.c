@@ -685,9 +685,10 @@ static bool retro_replace_image_index(unsigned index, const struct retro_game_in
 
     if ( info == NULL )
     {
-#if 1
+		log_cb(RETRO_LOG_INFO, "Removed image index %d\n", index );
 
-		log_cb(RETRO_LOG_ERROR, "Removed image index %d\n", index );
+#if 0
+
 		for ( int i = 0; i < DISK_STORE->count; ++i )
 		{
 			log_cb(RETRO_LOG_ERROR, "[%d] %c image = '%s'\n", i, ( i == DISK_STORE->index ) ? '*' : ' ', DISK_STORE->files[ i ] );
@@ -706,17 +707,17 @@ static bool retro_replace_image_index(unsigned index, const struct retro_game_in
     }
     else
     {
-		log_cb(RETRO_LOG_ERROR, "Set image index %d\n", index );
+		log_cb(RETRO_LOG_INFO, "Set image index %d\n", index );
 
 	    DISK_STORE->files[index] = strdup(info->path);
 	}
 
-#if 1
+#if 0
 
-		log_cb(RETRO_LOG_ERROR, "--- list is now ---\n" );
+		log_cb(RETRO_LOG_INFO, "--- list is now ---\n" );
 		for ( int i = 0; i < DISK_STORE->count; ++i )
 		{
-			log_cb(RETRO_LOG_ERROR, "[%d] %c image = '%s'\n", i, ( i == DISK_STORE->index ) ? '*' : ' ', DISK_STORE->files[ i ] );
+			log_cb(RETRO_LOG_INFO, "[%d] %c image = '%s'\n", i, ( i == DISK_STORE->index ) ? '*' : ' ', DISK_STORE->files[ i ] );
 		}
 
 #endif
