@@ -91,8 +91,6 @@ extern void set_truedrive_emulation(int val);
 #endif
 //VICE DEF END
 
-extern void Emu_init(void);
-extern void Emu_uninit(void);
 extern void vice_main_exit(void);
 extern void emu_reset(void);
 
@@ -587,17 +585,6 @@ static void update_variables(void)
 
 }
 
-void Emu_init(void)
-{
-   update_variables();
-   pre_main(RPATH);
-}
-
-void Emu_uninit(void)
-{
-   vice_main_exit();
-}
-
 void retro_shutdown_core(void)
 {
    environ_cb(RETRO_ENVIRONMENT_SHUTDOWN, NULL);
@@ -614,6 +601,12 @@ static dc_storage* DISK_STORE;
 
 static bool retro_set_eject_state( bool eject_request )
 {
+	if ( retro_load_ok == false )
+	{
+		log_cb( RETRO_LOG_ERROR, "[retro_set_eject_state] failed. retro_load_ok = %d.\n", retro_load_ok );
+		return false;
+	}
+
 	bool result;
 
     if ( eject_request )
@@ -627,11 +620,14 @@ static bool retro_set_eject_state( bool eject_request )
     else
     {
 		int r;
+		//log_cb( RETRO_LOG_INFO, "INSERT INDEX = %d; retro_load_ok = %d\n", DISK_STORE->index, retro_load_ok );
+		//log_cb( RETRO_LOG_INFO, "INDEX[%d] = %s\n", DISK_STORE->index, DISK_STORE->files[ DISK_STORE->index ] );
 		r = file_system_attach_disk( 8, DISK_STORE->files[ DISK_STORE->index ] );
-        log_cb( RETRO_LOG_INFO, "INSERTED: %s ; r=%d\n", DISK_STORE->files[ DISK_STORE->index ], r );
-        result = ( r == 0 );
+		log_cb( RETRO_LOG_INFO, "INSERTED: %s\n", DISK_STORE->files[ DISK_STORE->index ] );
+		//log_cb( RETRO_LOG_INFO, "INSERT: r=%d\n", r );
+		result = ( r == 0 );
 
-        DISK_STORE->eject_state = !result;
+		DISK_STORE->eject_state = !result;
 	}
 
 	return result;
@@ -872,9 +868,12 @@ void retro_init(void)
    environ_cb(RETRO_ENVIRONMENT_SET_CONTENT_FILEEXTS, &tape_info);
 #endif // __VIC20__
 
+	microSecCounter = 0;
 
+	retro_load_ok=true;
+	memset(SNDBUF,0,1024*2*2);
 
-   microSecCounter = 0;
+	update_variables();
 }
 
 void retro_deinit(void)
@@ -882,7 +881,7 @@ void retro_deinit(void)
 	dc_free( DISK_STORE );
 	DISK_STORE = NULL;
 
-	Emu_uninit();
+	vice_main_exit();
 }
 
 unsigned retro_api_version(void)
@@ -971,7 +970,6 @@ void retro_blit(void)
 
 void retro_run(void)
 {
-   static int mfirst=1;
    bool updated = false;
 
    if ( lastW!=retroW || lastH!=retroH )
@@ -984,17 +982,6 @@ void retro_run(void)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
       update_variables();
-
-   if (mfirst==1)
-   {
-      mfirst++;
-      log_cb(RETRO_LOG_INFO, "First time we return from retro_run()!\n");
-      retro_load_ok=true;
-      memset(SNDBUF,0,1024*2*2);
-
-      Emu_init();
-      return;
-   }
 
 	while(cpuloop==1)
 		maincpu_mainloop_retro();
@@ -1046,7 +1033,39 @@ bool retro_load_game(const struct retro_game_info *info)
 
    update_variables();
 
-   return true;
+	// If it's an m3u file?
+	if (strlen(RPATH) >= 3)
+	{
+		if(!strcasecmp(&RPATH[strlen(RPATH)-3], "m3u"))
+		{
+			int i;
+
+			// Parse the m3u file
+			dc_parse_m3u( DISK_STORE, RPATH );
+
+			// Some debugging
+			log_cb(RETRO_LOG_INFO, "m3u file parsed, %d file(s) found\n", DISK_STORE->count);
+			for( i = 0; i < DISK_STORE->count; i++)
+			{
+				log_cb( RETRO_LOG_INFO, "file %d: %s\n", i, DISK_STORE->files[i] );
+			}
+
+			// Insert first disk
+			DISK_STORE->index = 0;
+			DISK_STORE->eject_state = false;
+
+			// Fail?
+			if ( DISK_STORE->count > 0 )
+			{
+				strcpy( RPATH, DISK_STORE->files[0] );
+				log_cb( RETRO_LOG_INFO, "starting with m3u file: %s\n", RPATH );
+			}
+		}
+	}
+
+	pre_main(RPATH);
+
+	return true;
 }
 
 void retro_unload_game(void)
