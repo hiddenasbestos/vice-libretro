@@ -32,10 +32,6 @@ bool retro_load_ok = false;
 
 retro_log_printf_t log_cb;
 
-char DISKA_NAME[512]="\0";
-char DISKB_NAME[512]="\0";
-char TAPE_NAME[512]="\0";
-
 // Our virtual time counter, increased by retro_run()
 long microSecCounter=0;
 int cpuloop=1;
