@@ -2,6 +2,9 @@
 #include "libretro-core.h"
 #include "datasette.h"
 #include "tape.h"
+#include "attach.h"
+#include "retro_disk_control.h"
+#include <ctype.h>
 
 #ifdef __PLUS4__
 #include "plus4mem.h"
@@ -115,24 +118,6 @@ void retro_set_input_poll(retro_input_poll_t cb)
    input_poll_cb = cb;
 }
 
-static char CMDFILE[512];
-
-int loadcmdfile(char *argv)
-{
-   int res=0;
-
-   FILE *fp = fopen(argv,"r");
-
-   if( fp != NULL )
-   {
-      if ( fgets (CMDFILE , 512 , fp) != NULL )
-         res=1;
-      fclose (fp);
-   }
-
-   return res;
-}
-
 int HandleExtension(char *path,char *ext)
 {
    int len = strlen(path);
@@ -148,8 +133,6 @@ int HandleExtension(char *path,char *ext)
 
    return 0;
 }
-
-#include <ctype.h>
 
 // Args for Core
 static char XARGV[64][1024];
@@ -627,15 +610,7 @@ void retro_reset(void)
    emu_reset();
 }
 
-struct DiskImage {
-    char* fname;
-};
-
-static int diskIndex = 0;
-static int diskCount = 0;
-static struct DiskImage diskImage[80];
-static bool ejected = false;
-#include <attach.h>
+static dc_storage* DISK_STORE;
 
 static bool retro_set_eject_state( bool eject_request )
 {
@@ -646,16 +621,17 @@ static bool retro_set_eject_state( bool eject_request )
 		file_system_detach_disk( 8 );
         log_cb( RETRO_LOG_INFO, "EJECT (device 8)\n" );
         result = true;
-        ejected = true;
+
+        DISK_STORE->eject_state = true;
 	}
     else
     {
 		int r;
-		r = file_system_attach_disk( 8, diskImage[ diskIndex ].fname );
-        log_cb( RETRO_LOG_INFO, "INSERTED: %s ; r=%d\n", diskImage[ diskIndex ].fname, r );
+		r = file_system_attach_disk( 8, DISK_STORE->files[ DISK_STORE->index ] );
+        log_cb( RETRO_LOG_INFO, "INSERTED: %s ; r=%d\n", DISK_STORE->files[ DISK_STORE->index ], r );
         result = ( r == 0 );
 
-        ejected = !result;
+        DISK_STORE->eject_state = !result;
 	}
 
 	return result;
@@ -664,7 +640,7 @@ static bool retro_set_eject_state( bool eject_request )
 /* Gets current eject state. The initial state is 'not ejected'. */
 static bool retro_get_eject_state(void)
 {
-    return ejected;
+    return DISK_STORE->eject_state;
 }
 
 /* Gets current disk index. First disk is index 0.
@@ -672,7 +648,7 @@ static bool retro_get_eject_state(void)
  */
 static unsigned retro_get_image_index(void)
 {
-    return diskIndex;
+    return DISK_STORE->index;
 }
 
 /* Sets image index. Can only be called when disk is ejected.
@@ -681,13 +657,13 @@ static unsigned retro_get_image_index(void)
  */
 static bool retro_set_image_index(unsigned index)
 {
-    diskIndex = index;
+    DISK_STORE->index = index;
 }
 
 /* Gets total number of images which are available to use. */
 static unsigned retro_get_num_images(void)
 {
-    return diskCount;
+    return DISK_STORE->count;
 }
 
 
@@ -703,23 +679,53 @@ static unsigned retro_get_num_images(void)
  * returned 4 before.
  * Index 1 will be removed, and the new index is 3.
  */
-static bool retro_replace_image_index(unsigned index,
-      const struct retro_game_info *info)
+static bool retro_replace_image_index(unsigned index, const struct retro_game_info *info)
 {
-    if(diskImage[index].fname)
-        free(diskImage[index].fname);
-
-    if(info == NULL)
+    if( DISK_STORE->files[index] )
     {
-        memcpy(&diskImage[index], &diskImage[index+1], sizeof(struct DiskImage)*(diskCount-index-1));
-        diskCount--;
-        if(diskIndex > 0)
-            diskIndex--;
+        free( DISK_STORE->files[index] );
+        DISK_STORE->files[index] = NULL;
+	}
+
+    if ( info == NULL )
+    {
+#if 1
+
+		log_cb(RETRO_LOG_ERROR, "Removed image index %d\n", index );
+		for ( int i = 0; i < DISK_STORE->count; ++i )
+		{
+			log_cb(RETRO_LOG_ERROR, "[%d] %c image = '%s'\n", i, ( i == DISK_STORE->index ) ? '*' : ' ', DISK_STORE->files[ i ] );
+		}
+
+#endif
+
+        memcpy(&(DISK_STORE->files[index]), &(DISK_STORE->files[index+1]), sizeof(char*)*((DISK_STORE->count)-index-1));
+        DISK_STORE->count--;
+
+        if( DISK_STORE->index > 0 )
+        {
+            (DISK_STORE->index)--;
+		}
+
     }
     else
     {
-	    diskImage[index].fname = strdup(info->path);
+		log_cb(RETRO_LOG_ERROR, "Set image index %d\n", index );
+
+	    DISK_STORE->files[index] = strdup(info->path);
 	}
+
+#if 1
+
+		log_cb(RETRO_LOG_ERROR, "--- list is now ---\n" );
+		for ( int i = 0; i < DISK_STORE->count; ++i )
+		{
+			log_cb(RETRO_LOG_ERROR, "[%d] %c image = '%s'\n", i, ( i == DISK_STORE->index ) ? '*' : ' ', DISK_STORE->files[ i ] );
+		}
+
+#endif
+
+	return true;
 }
 
 /* Adds a new valid index (get_num_images()) to the internal disk list.
@@ -728,8 +734,8 @@ static bool retro_replace_image_index(unsigned index,
  * with replace_image_index. */
 static bool retro_add_image_index(void)
 {
-    diskImage[diskCount].fname = NULL;
-    diskCount++;
+    DISK_STORE->files[ DISK_STORE->count ] = NULL;
+    DISK_STORE->count++;
     return true;
 }
 
@@ -751,6 +757,8 @@ static void fallback_log(enum retro_log_level level, const char *fmt, ...)
 void retro_init(void)
 {
 	struct retro_log_callback log;
+
+	DISK_STORE = dc_create();
 
 	if (environ_cb(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &log))
 		log_cb = log.log;
@@ -871,7 +879,10 @@ void retro_init(void)
 
 void retro_deinit(void)
 {
-   Emu_uninit();
+	dc_free( DISK_STORE );
+	DISK_STORE = NULL;
+
+	Emu_uninit();
 }
 
 unsigned retro_api_version(void)
