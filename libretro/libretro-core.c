@@ -998,71 +998,75 @@ void retro_run(void)
 	microSecCounter += (1000000/50);
 }
 
-/*
-   unsigned int lastdown,lastup,lastchar;
-   static void keyboard_cb(bool down, unsigned keycode,
-   uint32_t character, uint16_t mod)
-   {
-
-   log_cb(RETRO_LOG_INFO, "Down: %s, Code: %d, Char: %u, Mod: %u.\n",
-   down ? "yes" : "no", keycode, character, mod);
-
-
-   if(down)lastdown=keycode;
-   else lastup=keycode;
-   lastchar=character;
-
-   }
-   */
-
-bool retro_load_game(const struct retro_game_info *info)
+void process_content_load()
 {
-   /*
-      struct retro_keyboard_callback cb = { keyboard_cb };
-      environ_cb(RETRO_ENVIRONMENT_SET_KEYBOARD_CALLBACK, &cb);
-      */
+	int RPATH_length = strlen( RPATH );
 
-   if (info)
-   {
-      const char *full_path = info->path;
-      strcpy(RPATH,full_path);
-   }
-   else
-   {
-      RPATH[0]=0;
-   }
-
-   update_variables();
-
-	// If it's an m3u file?
-	if (strlen(RPATH) >= 3)
+	if ( RPATH_length > 3 )
 	{
-		if(!strcasecmp(&RPATH[strlen(RPATH)-3], "m3u"))
+		// Trying to load a playlist?
+		if ( !strcasecmp( RPATH + ( RPATH_length - 3 ), "m3u" ) )
 		{
-			int i;
-
 			// Parse the m3u file
 			dc_parse_m3u( DISK_STORE, RPATH );
-
-			// Some debugging
-			log_cb(RETRO_LOG_INFO, "m3u file parsed, %d file(s) found\n", DISK_STORE->count);
-			for( i = 0; i < DISK_STORE->count; i++)
-			{
-				log_cb( RETRO_LOG_INFO, "file %d: %s\n", i, DISK_STORE->files[i] );
-			}
 
 			// Insert first disk
 			DISK_STORE->index = 0;
 			DISK_STORE->eject_state = false;
 
 			// Fail?
-			if ( DISK_STORE->count > 0 )
+			if ( DISK_STORE->count == 0 )
+			{
+				RPATH[0] = 0; // no content.
+			}
+			else
 			{
 				strcpy( RPATH, DISK_STORE->files[0] );
 				log_cb( RETRO_LOG_INFO, "starting with m3u file: %s\n", RPATH );
 			}
 		}
+		// Trying to load a disk image?
+		else if ( !strcasecmp( RPATH + ( RPATH_length - 3 ), "d64" ) ||
+				  !strcasecmp( RPATH + ( RPATH_length - 3 ), "d71" ) ||
+				  !strcasecmp( RPATH + ( RPATH_length - 3 ), "d81" ))
+		{
+			// create a single entry in the disk store.
+			if ( dc_add_file( DISK_STORE, RPATH ) )
+			{
+				// Insert first disk
+				DISK_STORE->index = DISK_STORE->count - 1;
+				DISK_STORE->eject_state = false;
+			}
+			else
+			{
+				RPATH[0] = 0; // no content.
+			}
+		}
+
+		// Some debugging
+		log_cb( RETRO_LOG_INFO, "Disk store: %d file(s) added\n", DISK_STORE->count );
+		for ( int i = 0; i < DISK_STORE->count; i++)
+		{
+			log_cb( RETRO_LOG_INFO, "file %d: %s\n", i, DISK_STORE->files[ i ] );
+		}
 	}
+}
+
+bool retro_load_game(const struct retro_game_info *info)
+{
+	if (info)
+	{
+		const char *full_path = info->path;
+		strcpy(RPATH,full_path);
+	}
+	else
+	{
+		RPATH[0] = 0;
+	}
+
+	update_variables();
+
+	process_content_load();
 
 	pre_main(RPATH);
 
