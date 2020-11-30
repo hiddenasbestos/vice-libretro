@@ -70,6 +70,8 @@ int retroh=768;
 int lastW=1024;
 int lastH=768;
 
+int auto_drive_type = 1541; // safe default
+
 extern int RETROTDE,RETRODRVTYPE,RETROSIDMODL,RETROC64MODL,RETROVIC20RAM,RETRO_BORDERS;
 extern int retro_ui_finalized;
 extern void set_drive_type(int drive,int val);
@@ -150,6 +152,24 @@ void Add_Option(const char* option)
    }
 
    sprintf(XARGV[PARAMCOUNT++],"%s",option);
+}
+
+static void auto_detect_drive_type( const char* filename )
+{
+	// Drive type?
+	int l = strlen( filename );
+
+	if ( l > 3 )
+	{
+		if ( !strcasecmp( filename + ( l - 3 ), "d64" ) )
+			auto_drive_type = 1541;
+		if ( !strcasecmp( filename + ( l - 3 ), "d71" ) )
+			auto_drive_type = 1571;
+		if ( !strcasecmp( filename + ( l - 3 ), "d81" ) )
+			auto_drive_type = 1581;
+	}
+
+	log_cb( RETRO_LOG_INFO, "auto_drive_type = %d\n", auto_drive_type );
 }
 
 int pre_main(const char *argv)
@@ -301,7 +321,7 @@ void retro_set_environment(retro_environment_t cb)
       },*/
       {
          "vice_Drive8Type",
-         "Floppy Drive Model; 1541|1571|1581",
+         "Floppy Drive Model; Auto Detect|1541|1571|1581",
       },
 
 #endif
@@ -322,7 +342,7 @@ void retro_set_environment(retro_environment_t cb)
    environ_cb(RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME, &allowNoGameMode);
 }
 
-static void update_variables(void)
+static void update_variables( void )
 {
 	int drive8type = 1541;
 	struct retro_variable var;
@@ -437,7 +457,17 @@ static void update_variables(void)
 
 	if ( environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value )
 	{
-		if ( strcmp( var.value, "1571" ) == 0 )
+		drive8type = auto_drive_type;
+
+		if ( strcmp( var.value, "Auto Detect" ) == 0 )
+		{
+			drive8type = auto_drive_type;
+		}
+		else if ( strcmp( var.value, "1541" ) == 0 )
+		{
+			drive8type = 1541;
+		}
+		else if ( strcmp( var.value, "1571" ) == 0 )
 		{
 			drive8type = 1571;
 		}
@@ -628,6 +658,16 @@ static bool retro_set_eject_state( bool eject_request )
 		result = ( r == 0 );
 
 		DISK_STORE->eject_state = !result;
+
+#if defined( __X64__ ) || defined ( __X64SC__ )
+
+		if ( result )
+		{
+			auto_detect_drive_type( DISK_STORE->files[ DISK_STORE->index ] );
+			update_variables();
+		}
+
+#endif
 	}
 
 	return result;
@@ -1001,6 +1041,7 @@ void retro_run(void)
 void process_content_load()
 {
 	int RPATH_length = strlen( RPATH );
+	auto_drive_type = 1541; // safe default.
 
 	if ( RPATH_length > 3 )
 	{
@@ -1036,6 +1077,7 @@ void process_content_load()
 				// Insert first disk
 				DISK_STORE->index = DISK_STORE->count - 1;
 				DISK_STORE->eject_state = false;
+				strcpy( RPATH, DISK_STORE->files[ DISK_STORE->index ] );
 			}
 			else
 			{
@@ -1049,6 +1091,8 @@ void process_content_load()
 		{
 			log_cb( RETRO_LOG_INFO, "file %d: %s\n", i, DISK_STORE->files[ i ] );
 		}
+
+		auto_detect_drive_type( RPATH );
 	}
 }
 
@@ -1064,9 +1108,9 @@ bool retro_load_game(const struct retro_game_info *info)
 		RPATH[0] = 0;
 	}
 
-	update_variables();
-
 	process_content_load();
+
+	update_variables();
 
 	pre_main(RPATH);
 
