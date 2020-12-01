@@ -138,6 +138,8 @@ int ui_init_finalize(void)
 
 	vic20model_set(RETROC64MODL);
 
+	resources_set_int( "VICBorderMode", RETRO_BORDERS );
+
 	resources_set_int("RamBlock0", ( RETROVIC20RAM & VIC_BLK0 ) ? 1:0);
 	resources_set_int("RamBlock1", ( RETROVIC20RAM & VIC_BLK1 ) ? 1:0);
 	resources_set_int("RamBlock2", ( RETROVIC20RAM & VIC_BLK2 ) ? 1:0);

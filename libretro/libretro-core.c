@@ -185,9 +185,6 @@ int pre_main(const char *argv)
 
 #if defined(__VIC20__)
 
-	/*Add_Option("-VICborders");
-	Add_Option("full");*/
-
 	// get content file extension.
 	const int argv_len = strlen( argv );
 	const char* p_ext = NULL;
@@ -281,13 +278,16 @@ void retro_set_environment(retro_environment_t cb)
  #ifdef __VIC20__
 
 	  {
+         "vice_VIC20memory",
+         "Memory Expansion; NONE|3KB|8KB|16KB|24KB|32KB|35KB",
+      },
+	  {
          "vice_VIC20Video",
          "Video Standard; PAL|NTSC",
       },
-
 	  {
-         "vice_VIC20memory",
-         "Memory Expansion; NONE|3KB|8KB|16KB|24KB|32KB|35KB",
+         "vice_VIC20Borders",
+         "Border Size; Normal|Full|Disabled",
       },
 
 #elif __PLUS4__
@@ -523,6 +523,36 @@ static void update_variables( void )
 		else
 		{
 			RETROC64MODL = modl;
+		}
+	}
+
+	var.key = "vice_VIC20Borders";
+	var.value = NULL;
+
+	if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+	{
+		int size = 0; // default: normal
+
+		if ( !strcmp( var.value, "Normal" ) )
+		{
+			size = 0; // normal
+		}
+		else if ( !strcmp( var.value, "Full" ) )
+		{
+			size = 1; // full
+		}
+		else if ( !strcmp( var.value, "Disabled" ) )
+		{
+			size = 3; // none
+		}
+
+		if ( retro_ui_finalized )
+		{
+			resources_set_int( "VICBorderMode", size );
+		}
+		else
+		{
+			RETRO_BORDERS = size;
 		}
 	}
 
